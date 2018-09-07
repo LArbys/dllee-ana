@@ -21,6 +21,7 @@ First, get the name of the sample you want to run. For example, `mcc8v7_bnbcosmi
 * clean up `superalist.txt` by removing the lines that have `DEBUG` statements about the pubs database (I haven't figured out how to remove these yet).
 * copy `superalist.txt` to the folder `superalists` in this repository.
 * edit run_job.sh to use your supera list and set the working directory to the same as this one
+* also edit run_job.sh to specify tagger configuration file. this provides precut bounds
 * edit `run_plotflashpe.py` to run the number of `filesperjob` you want. Set to 10 currently.
 * calculate number of jobs you need. get the total files by `cat superalists/[you_list.txt] | wc -l`, divide by 10 and add 1
 * edit submit.sh to run those jobs by setting `#SBATCH --array=0-N` with N being number of jobs

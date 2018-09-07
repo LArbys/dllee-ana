@@ -1,6 +1,6 @@
 #!/bin/bash
 
-workdir=$1
+taggercfg=$1
 flist=$2
 arrayid=$SLURM_ARRAY_TASK_ID
 let filesperjob=5
@@ -31,7 +31,8 @@ sed -n ${nstart},${nend}p $flist | awk '{print $3 }' | sed s/supera/opreco/ | se
 sed -n ${nstart},${nend}p $flist | awk '{print $3 }' | sed s/supera/taggeroutv2-larlite/ | sed s/90-days-archive// >> input_larlite.txt
 
 fout=`printf ../output/out_plotflashpe_%04d.root $arrayid`
-./plotflashpe $fout > /dev/null || exit
+echo "./plotflashpe $fout $taggercfg"
+./plotflashpe $fout $taggercfg > /dev/null || exit
 
 cd ../
 rm -r $jobdir

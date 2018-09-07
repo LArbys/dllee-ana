@@ -25,11 +25,19 @@ int main( int nargs, char** argv ) {
   std::string outname = "output_plotflashpe.root";
   outname  = argv[1];
 
+  std::string taggercfg = argv[2];
+
   larcv::PSet cfg = larcv::CreatePSetFromFile("io.cfg");
   larcv::PSet pset = cfg.get<larcv::PSet>("IOConfig");
   std::string ssnet_flist = pset.get<std::string>("SSNetFilelist");
   std::string opreco_flist = pset.get<std::string>("OpRecoFilelist");
-  
+
+  larcv::PSet cfg_tagger   = larcv::CreatePSetFromFile(taggercfg);
+  larcv::PSet pset_tagger  = cfg_tagger.get<larcv::PSet>("TaggerCROI");
+  larcv::PSet pset_precut  = pset_tagger.get<larcv::PSet>("LEEPreCut");
+  int win_start = pset_precut.get<int>("WinStartTick");
+  int win_end   = pset_precut.get<int>("WinEndTick");
+
   larlitecv::DataCoordinator dataco;
   dataco.configure( "io.cfg", "IOManager", "StorageManager", "IOConfig" );
   dataco.set_filelist( ssnet_flist,  "larcv" );
@@ -103,8 +111,9 @@ int main( int nargs, char** argv ) {
       flashpe   = flash.TotalPE();
       tree.Fill();
 
-      if ( intime_hasflash==0 && flashtick>=200 && flashtick<=350 ) { // overlay bounds
+      //if ( intime_hasflash==0 && flashtick>=200 && flashtick<=350 ) { // overlay bounds
       //if ( flashtick>=180 && flashtick<=330 ) { // bnb or mc bounds
+      if ( intime_hasflash==0 && flashtick>=win_start && flashtick<=win_end ) { // bounds from tagger cfg
 	num_intime++;
 	if ( intime_hasflash==0 ) {
 	  intime_hasflash  = 1;
