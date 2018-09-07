@@ -2,3 +2,5 @@
 *.root
 *.so
 plotflashpe
+*.txt
+job*
