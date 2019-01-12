@@ -25,7 +25,7 @@ def get_vertexana_list( runtable, project ):
         jobnum = run*10000 + subrun
         if project=="vertex":
             # classic
-            fname = os.path.dirname(f.replace("stage1","stage2/test21")) + "/vertexout_%d.root"%(jobnum)
+            fname = os.path.dirname(f.replace("stage1","stage2/test21")) + "/vertexana_%d.root"%(jobnum)
         elif project=="dlcosmicvertex":
             fname = f.replace("stage1","dlcosmicvertex").replace("supera","dlcosmicvertex-ana")
         else:
