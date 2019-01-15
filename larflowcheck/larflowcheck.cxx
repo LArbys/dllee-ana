@@ -17,7 +17,7 @@ int main( int nargs, char** argv ) {
 
   std::cout << "LArFlow Check" << std::endl;
   std::string input = argv[1];
-  bool make_images = true;
+  bool make_images = false;
 
   larcv::IOManager io( larcv::IOManager::kREAD );
   io.add_in_file( input );
@@ -312,6 +312,7 @@ int main( int nargs, char** argv ) {
     std::cout << "num flow to zero: "    << npixels_flow2zero[i] << " (" << float(npixels_flow2zero[i])/float(npixels_abovethreshold[i]) << ")" << std::endl;
     std::cout << "num flow to sub-thresh: " << npixels_flow2subthresh[i] << " (" << float(npixels_flow2subthresh[i])/float(npixels_abovethreshold[i]) << ")" << std::endl;
     std::cout << "num with no-flow: " << npixels_noflow[i] << " (" << float(npixels_noflow[i])/float(npixels_abovethreshold[i]) << ")" << std::endl;
+    std::cout << "num belowthresh w/ flow: " << npixels_belowthreshold_wflow[i] << std::endl;
   }
   
   
