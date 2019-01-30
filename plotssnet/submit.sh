@@ -23,12 +23,25 @@ WORKDIR_IC=/cluster/kappa/wongjiradlab/twongj01/dllee-ana/plotssnet/
 #OUTDIR_IC=${WORKDIR_IC}/output/mcc8v11_bnbcosmic_detsys_cv/
 
 # MCC8v6 EXTBNB
-SSNETLIST_IC=${WORKDIR_IC}/mcc8v6_extbnb_ssnet.list
-SUPERALIST_IC=${WORKDIR_IC}/mcc8v6_extbnb_supera.list
-OUTDIR=${WORKDIR}/output/mcc8v6_extbnb/
-OUTDIR_IC=${WORKDIR_IC}/output/mcc8v6_extbnb/
+#SSNETLIST_IC=${WORKDIR_IC}/mcc8v6_extbnb_ssnet.list
+#SUPERALIST_IC=${WORKDIR_IC}/mcc8v6_extbnb_supera.list
+#OUTDIR=${WORKDIR}/output/mcc8v6_extbnb/
+#OUTDIR_IC=${WORKDIR_IC}/output/mcc8v6_extbnb/
+
+# MCC9 BNB 5e19
+#TAG=mcc9tag1_bnb5e19
+
+# MCC9 nue-intrinsic corsika
+TAG=mcc9tag2_nueintrinsic_corsika
+
+# SET VARIABLES
+SSNETLIST_IC=${WORKDIR_IC}/filelists/${TAG}_ssnet.list
+SUPERALIST_IC=${WORKDIR_IC}/filelists/${TAG}_supera.list
+OUTDIR=${WORKDIR}/output/${TAG}/
+OUTDIR_IC=${WORKDIR_IC}/output/${TAG}/
 
 mkdir -p ${OUTDIR}
 
 module load singularity
-singularity exec ${CONTAINER} bash -c "cd ${WORKDIR_IC} && ls && ./run_plot_ssnet.sh ${SSNETLIST_IC} ${SUPERALIST_IC} ${OUTDIR_IC}"
+singularity exec ${CONTAINER} bash -c "cd ${WORKDIR_IC} && ls && ./run_plot_ssnet.sh ${SSNETLIST_IC} ${SUPERALIST_IC} ${OUTDIR_IC} ${TAG}"
+#singularity exec ${CONTAINER} bash -c "cd ${WORKDIR_IC} && ls && SLURM_ARRAY_TASK_ID=1 ./run_plot_ssnet.sh ${SSNETLIST_IC} ${SUPERALIST_IC} ${OUTDIR_IC} ${TAG}"
