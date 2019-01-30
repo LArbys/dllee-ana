@@ -2,6 +2,7 @@
 
 SSNet analysis scripts
 
+WARNING: these are very quick and dirty.
 
 # Instructions
 
