@@ -3,6 +3,7 @@
 flist_ssnetout=$1
 flist_supera=$2
 outdir=$3
+tag=$4
 arrayid=$SLURM_ARRAY_TASK_ID
 
 jobdir=`printf job%d ${arrayid}`
@@ -28,11 +29,14 @@ cp plot_ssnet.py $jobdir/
 cp plot_ssnet $jobdir/
 
 cd $jobdir
+
+outfile=`printf out_plotssnet_%s_%02d.root ${tag} ${arrayid}`
 #python plot_ssnet.py $ssnetfile $superafile out_plotssnet_mcc9_extbnb_beta1_${arrayid}.root > log_job${arrayid}.txt || exit
-./plot_ssnet $ssnetfile $superafile out_plotssnet_mcc9_extbnb_beta1_${arrayid}.root > log_job${arrayid}.txt || exit
+#./plot_ssnet $ssnetfile $superafile out_plotssnet_mcc9_extbnb_beta1_${arrayid}.root > log_job${arrayid}.txt || exit
+./plot_ssnet $ssnetfile $superafile  ${outfile} >& log_job${arrayid}.txt || exit
  
 # finally copy output
-mv out_plotssnet_mcc9_extbnb_beta1_${arrayid}.root $outdir/
+mv ${outfile} $outdir/
 
 # clean up
 cd ..
