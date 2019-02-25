@@ -1,9 +1,9 @@
 #include <iostream>
 #include <string>
 
-#include "DataFormat/IOManager.h"
-#include "DataFormat/EventImage2D.h"
-#include "ROOTUtil/ROOTUtil.h"
+#include "larcv/core/DataFormat/IOManager.h"
+#include "larcv/core/DataFormat/EventImage2D.h"
+#include "larcv/core/ROOTUtil/ROOTUtils.h"
 
 #include "TApplication.h"
 #include "TCanvas.h"
@@ -11,20 +11,39 @@
 #include "TH2D.h"
 #include "TStyle.h"
 
+/**
+ * This routine checks the quality of the truth labels for larflow.
+ * We want to know when a pixel, above treshold,
+ *  (1) has flow that goes to another pixel with charge [GOOD]
+ *  (2) has flow that goes to a pixel in the target plane with no charge [BAD]
+ * oe when a pixel, below threshold,
+ *  (3) has a flow value that goes to charge [Maybe bad -- maybe just below threshold]
+ *
+ *
+ * For overlay images, some pixels above threshold are due to cosmics.
+ * Here, we use the segment image as a way to label when pixels come from MC 
+ *   and only consider those.
+ *
+ */
 int main( int nargs, char** argv ) {
 
   gStyle->SetOptStat(0);
 
   std::cout << "LArFlow Check" << std::endl;
   std::string input = argv[1];
-  bool make_images = false;
+  bool make_images = true;
+  bool isoverlay   = true;
+  int nentries = -1;
+  int start_entry = 0;
 
-  larcv::IOManager io( larcv::IOManager::kREAD );
+  larcv::IOManager io( larcv::IOManager::kREAD,"", larcv::IOManager::kTickBackward );
+  //larcv::IOManager io( larcv::IOManager::kREAD,"");  
   io.add_in_file( input );
   io.initialize();
 
-  int nentries = io.get_n_entries();
-  nentries = 1;
+  int file_nentries = io.get_n_entries();
+  if ( nentries<=0 )
+    nentries = file_nentries-start_entry;
 
   std::cout << "number of entries: " << nentries << std::endl;
   TApplication app( "app", &nargs, argv );
@@ -40,18 +59,26 @@ int main( int nargs, char** argv ) {
   int npixels_flow2subthresh[6] = {0}; // (0-10)
 
   int npixels_belowthreshold_wflow[6] = {0};
-  
-  for (int ientry=0; ientry<nentries; ientry++ ) {
+
+  int end_entry = start_entry + nentries;
+  if ( nentries>file_nentries )
+    end_entry = file_nentries;
+  for (int ientry=start_entry; ientry<end_entry; ientry++ ) {
     io.read_entry(ientry);
 
     // get the event data
-    auto ev_adc     = (larcv::EventImage2D*)io.get_data( larcv::kProductImage2D, "wire" );
+    auto ev_adc     = (larcv::EventImage2D*)io.get_data( larcv::kProductImage2D, "wiremc" );
     auto ev_larflow = (larcv::EventImage2D*)io.get_data( larcv::kProductImage2D, "larflow" );
+    larcv::EventImage2D* ev_segment = nullptr;
+    if ( isoverlay )
+      ev_segment = (larcv::EventImage2D*)io.get_data( larcv::kProductImage2D, "segment" );
+    
 
     // make pointers and containers for visualization objects
     TCanvas* c1 = nullptr;
     TCanvas* c2 = nullptr;
     TCanvas* c3 = nullptr;
+    TCanvas* cflowval = nullptr;
     if ( make_images ) {
       c1 = new TCanvas("c1","c1",1200,1200);
       c1->Divide( 3, 3 ); // {flow},{src,target,src->target}
@@ -59,11 +86,14 @@ int main( int nargs, char** argv ) {
       c2->Divide( 3, 3 ); // {flow},{src,target,src->target}
       c3 = new TCanvas("c3","c3",1200,400);
       c3->Divide( 3, 1 ); // for each source plane, we histogram adc values for good and bad pixels
+      cflowval = new TCanvas("cflowval","cflowval",1200,500);
+      cflowval->Divide( 2, 1 );
     }
     std::vector<TH2D*>  hsource_v;
     std::vector<TH2D*>  htarget_v;
     std::vector<TH2D*>  hflow_v;
     std::vector<TH1D*>  hadc_v;
+    std::vector<TH1D*>  hflowval_v;
 
     // loop over each (source) plane
     for ( size_t p=0; p<3; p++ ) {
@@ -71,6 +101,10 @@ int main( int nargs, char** argv ) {
       // get source plane and meta
       auto const& img  = ev_adc->Image2DArray()[p];
       auto const& meta = img.meta();
+
+      const larcv::Image2D* segment = nullptr;
+      if ( isoverlay )
+        segment = &(ev_segment->Image2DArray().at(p));
 
       // get target adc images
       auto const& target1 = ev_adc->Image2DArray()[ target_planes[2*p] ];
@@ -93,6 +127,8 @@ int main( int nargs, char** argv ) {
       TH1D* hadc_good = nullptr;
       TH1D* hadc_wadc_noflow = nullptr;
       TH1D* hadc_noadc_wflow = nullptr;
+      TH1D* hflow_val1 = nullptr;
+      TH1D* hflow_val2 = nullptr;      
       if ( make_images ) {
         char srcname[15];
         sprintf( srcname, "hsource%d", (int)p );
@@ -128,7 +164,14 @@ int main( int nargs, char** argv ) {
         sprintf( adcname3, "hadc_noadc_wflow_p%d", (int)p );
         hadc_good = new TH1D( adcname1, adcname1, 100, 0, 100 );
         hadc_wadc_noflow = new TH1D( adcname2, adcname2, 100, 0, 100 );
-        hadc_noadc_wflow = new TH1D( adcname3, adcname3, 100, 0, 100 ); 
+        hadc_noadc_wflow = new TH1D( adcname3, adcname3, 100, 0, 100 );
+
+        char flowname1[40];
+        char flowname2[40];        
+        sprintf(flowname1, "hflowval1_p%d",(int)p);
+        sprintf(flowname2, "hflowval2_p%d",(int)p);        
+        hflow_val1 = new TH1D( flowname1, "flow values;flow;", 2000, -3456, 3456 );
+        hflow_val2 = new TH1D( flowname2, "flow values;flow;", 2000, -3456, 3456 );        
       }
 
       for ( int row=0; row<(int)meta.rows(); row++ ) {
@@ -140,6 +183,25 @@ int main( int nargs, char** argv ) {
           int flowcol1 = col + dflow1;
           int flowcol2 = col + dflow2;
 
+          if ( isoverlay ) {
+            // we'll only have values for pixels made by MC
+            // so we segment to mark them
+            float segpixval = segment->pixel(row,col);
+
+            if ( segpixval==0 )
+              continue;
+            else
+              std::cout << "(" << row << "," << col << ") segment=" << segpixval << std::endl;            
+          }
+
+          if ( make_images ) {
+            if ( dflow1!=0 )
+              hflow_val1->Fill( dflow1 );
+            if (dflow2!=0 )
+              hflow_val2->Fill( dflow2 );
+          }
+                
+
           // mistakes we need to track
           // (1) has adc, no flow
           // (2) no adc,  has flow
@@ -149,13 +211,15 @@ int main( int nargs, char** argv ) {
             if ( dflow1!=0 ) {
               npixels_belowthreshold_wflow[2*p]++;
               if ( make_images ) {
-                hsource->SetBinContent( col+1, meta.rows()-row, 10 ); // no adc, has flow
+                //hsource->SetBinContent( col+1, meta.rows()-row, 10 ); // no adc, has flow
+                hsource->SetBinContent( col+1, row+1, 10 ); // no adc, has flow                
                 hadc_noadc_wflow->Fill( adc );
               }
             }
             else {
               if ( make_images )
-                hsource->SetBinContent( col+1, meta.rows()-row, 0 );  // no adc, no flow (OK)
+                //hsource->SetBinContent( col+1, meta.rows()-row, 0 );  // no adc, no flow (OK)
+                hsource->SetBinContent( col+1, row+1, 0 );  // no adc, no flow (OK)
             }
             continue;
           }
@@ -163,13 +227,14 @@ int main( int nargs, char** argv ) {
             //std::cout << "[" << row << "," << col << "] adc=" << adc << std::endl;            
             if ( dflow1!=0 ) {
               if ( make_images ) {
-                hsource->SetBinContent( col+1, meta.rows()-row, 30 ); // w adc, w flow
+                //hsource->SetBinContent( col+1, meta.rows()-row, 30 ); // w adc, w flow
+                hsource->SetBinContent( col+1, row+1, 30 ); // w adc, w flow                
                 hadc_good->Fill( adc );
               }
             }
             else {
               if ( make_images ) {
-                hsource->SetBinContent( col+1, meta.rows()-row, 20 ); // w adc, no flow
+                hsource->SetBinContent( col+1, row+1, 20 ); // w adc, no flow
                 hadc_wadc_noflow->Fill(adc);
               }
             }
@@ -197,14 +262,20 @@ int main( int nargs, char** argv ) {
 
           if ( make_images ) {
             if ( flowpix1>=1.0 )
-              hflow1->SetBinContent( flowcol1+1, meta.rows()-row,  adc ); // good
+              //hflow1->SetBinContent( flowcol1+1, meta.rows()-row,  adc ); // good
+              hflow1->SetBinContent( flowcol1+1, row+1,  adc ); // good              
             else
-              hflow1->SetBinContent( flowcol1+1, meta.rows()-row,  0.5 ); // mistake (src adc, no tar adc)
+              //hflow1->SetBinContent( flowcol1+1, row+1,  0.5 ); // mistake (src adc, no tar adc)
+              hflow1->SetBinContent( flowcol1+1, row+1,  0.5 ); // mistake (src adc, no tar adc)
             
-            if ( flowpix2>=1.0 )
-              hflow2->SetBinContent( flowcol2+1, meta.rows()-row,  adc ); // good
-            else
-              hflow2->SetBinContent( flowcol2+1, meta.rows()-row,  0.5 ); // mistake (src adc, no tar adc)
+            if ( flowpix2>=1.0 ) {
+              //hflow2->SetBinContent( flowcol2+1, rwmeta.rows()-row,  adc ); // good
+              hflow2->SetBinContent( flowcol2+1, row+1,  adc ); // good
+            }
+            else {
+              //hflow2->SetBinContent( flowcol2+1, meta.rows()-row,  0.5 ); // mistake (src adc, no tar adc)
+              hflow2->SetBinContent( flowcol2+1, row+1,  0.5 ); // mistake (src adc, no tar adc)              
+            }
           }
 
           if ( flowpix1>=1 )
@@ -246,7 +317,15 @@ int main( int nargs, char** argv ) {
         hadc_wadc_noflow->Draw();
         hadc_noadc_wflow->Draw("same");
         hadc_good->Draw("same");
-      
+
+        cflowval->Draw();
+        cflowval->cd(1);
+        cflowval->cd(1)->SetLogy(1);
+        hflow_val1->Draw();
+        cflowval->cd(2);
+        cflowval->cd(2)->SetLogy(1);
+        hflow_val2->Draw();
+        
         hsource_v.push_back( hsource );
         htarget_v.push_back( htarget1 );
         htarget_v.push_back( htarget2 );
@@ -254,7 +333,9 @@ int main( int nargs, char** argv ) {
         hflow_v.push_back( hflow2 );
         hadc_v.push_back( hadc_good );
         hadc_v.push_back( hadc_wadc_noflow );
-        hadc_v.push_back( hadc_noadc_wflow ); 
+        hadc_v.push_back( hadc_noadc_wflow );
+        hflowval_v.push_back( hflow_val1 );
+        hflowval_v.push_back( hflow_val2 );
       }
       
     }//end of plane (3) loop
@@ -262,13 +343,13 @@ int main( int nargs, char** argv ) {
     // view, save to png, and clean
     if ( make_images ) {
       char canvname1[20];
-      sprintf( canvname1, "centry%d_flow1.png", (int)ientry );
+      sprintf( canvname1, "centry%d_flow1.pdf", (int)ientry );
       c1->Update();
       c1->Draw();
       c1->SaveAs(canvname1);
 
       char canvname2[20];
-      sprintf( canvname2, "centry%d_flow2.png", (int)ientry );    
+      sprintf( canvname2, "centry%d_flow2.pdf", (int)ientry );    
       c2->Update();
       c2->Draw();
       c2->SaveAs(canvname2);
@@ -278,6 +359,12 @@ int main( int nargs, char** argv ) {
       c3->Update();
       c3->Draw();
       c3->SaveAs(canvname3);
+
+      char canvname_flowval[40];
+      sprintf( canvname_flowval, "centry%d_flowval", (int)ientry );
+      cflowval->Update();
+      cflowval->Draw();
+      cflowval->SaveAs(canvname_flowval);
       
       std::cout << "entry done" << std::endl;
       std::cout << "[enter] to continue" << std::endl;
@@ -301,7 +388,7 @@ int main( int nargs, char** argv ) {
       delete c2;
       delete c3;
     }//if make_images
-    
+    //break;
   }//end of entry loop
 
   std::cout << "summary" << std::endl;
