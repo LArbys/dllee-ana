@@ -34,10 +34,10 @@ int main( int nargs, char** argv ) {
 
   std::cout << "LArFlow Check" << std::endl;
   std::string input = argv[1];
-  bool make_images = true;
+  bool make_images = false;
   bool isoverlay   = false;
   bool has_chstatus = true;
-  int nentries = 1;
+  int nentries = 5;
   int start_entry = 0;
   float src_adc_threshold = 10.0;
 
@@ -352,6 +352,7 @@ int main( int nargs, char** argv ) {
         TGraph* gmistakes = new TGraph( wadc_noflow_v[0].size(), wadc_noflow_v[0].data(), wadc_noflow_v[1].data() );\
         gmistakes->SetMarkerColor(kRed);
         gmistakes->SetMarkerStyle(24);
+        gmistakes->SetMarkerSize(1);        
         tgraph_v.push_back(gmistakes);
         std::cout << "mistaker points: " << gmistakes->GetN() << std::endl;
         
@@ -361,7 +362,7 @@ int main( int nargs, char** argv ) {
         htarget1->Draw("colz");
         c1->cd( p+6+1 );
         hflow1->Draw("colz");
-        gmistakes->Draw("P");
+        gmistakes->Draw("LP");
 
         c2->cd( p+1 );
         hsource->Draw("colz");
