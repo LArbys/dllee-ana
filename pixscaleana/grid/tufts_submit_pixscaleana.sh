@@ -6,7 +6,7 @@
 #SBATCH --output=log_pixscaleana.log
 #SBATCH --mem-per-cpu=2000
 #SBATCH --time=10:00
-#SBATCH --array=2-10
+#SBATCH --array=0-500
 
 container=/cluster/tufts/wongjiradlab/larbys/larbys-containers/ubdl_singularity_031219.img
 
