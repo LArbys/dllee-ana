@@ -9,7 +9,6 @@ INCFLAGS += `root-config --cflags`
 INCFLAGS += -DUSE_OPENCV=1
 
 LDFLAGS += $(shell larcv-config --libs)
-LDFLAGS += $(shell larlitecv-config --libs)
 LDFLAGS += $(shell larlite-config --libs)
 LDFLAGS += `root-config --ldflags --libs`
 
