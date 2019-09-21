@@ -54,9 +54,10 @@ for ientry in xrange(nentries):
         adc_crop[ adc_crop<10 ] = 0.0
         adc_crop[ adc_crop>0 ] = 1.0
         nadcthresh = np.sum( adc_crop )
+        nadczero   = np.sum( adc_crop==0.0 )
 
 
-        print "  (plane ",p,"): Number of pixels above ADC threshold: ",nadcthresh
+        print "  (plane ",p,"): Number of pixels above ADC threshold: ",nadcthresh," number-zero=",nadczero
         print "  (plane ",p,"): Number of shower pixels: ",nshowerpix
         print "  (plane ",p,"): Number of ssnet pixels with score and above threshold: ",nabovethresh
         if nshowerpix>0:
