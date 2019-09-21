@@ -3,8 +3,8 @@
 #SBATCH --job-name=check-ssnet
 #SBATCH --output=/cluster/tufts/wongjiradlab/twongj01/dllee-ana/ssnetcheck/logs/check.log
 #SBATCH --mem-per-cpu=2000
-#SBATCH --time=20:00
-#SBATCH --array=0-1
+#SBATCH --time=5:00
+#SBATCH --array=20-499
 
 CONTAINER=/cluster/tufts/wongjiradlab/larbys/larbys-containers/singularity_ubdl_deps_py2_091319.simg
 SSNET_CHECK_DIR=/cluster/tufts/wongjiradlab/twongj01/dllee-ana/ssnetcheck/

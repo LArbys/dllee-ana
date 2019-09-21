@@ -25,8 +25,7 @@ ssnetv2=$(echo $supera | sed 's|supera|ssnetserveroutv2-larcv|g')
 echo "TAGGER: $tagger"
 echo "SSNET: $ssnetv2"
 
-python /cluster/tufts/wongjiradlab/twongj01/dllee-ana/ssnetcheck/ssnetcheck.py $supera $tagger $ssnetv2 > receipt_file
-
-tail -n 2 receipt_file
 outfile=`printf $result_folder/run%d_subrun%d.out $RUN $SUBRUN`
-mv receipt_file $outfile
+python /cluster/tufts/wongjiradlab/twongj01/dllee-ana/ssnetcheck/ssnetcheck.py $supera $tagger $ssnetv2 > $outfile
+
+tail -n 2 $outfile
