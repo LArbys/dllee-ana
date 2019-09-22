@@ -12,7 +12,7 @@ cd $workdir
 
 #SLURM_ARRAY_TASK_ID=200
 
-let lineno=${SLURM_ARRAY_TASK_ID}+1
+let lineno=${SLURM_ARRAY_TASK_ID}+4000+1
 supera=$(sed -n ${lineno}p $inputlist | awk '{ print $3 }')
 
 let RUN=$(sed -n ${lineno}p $inputlist | awk '{ print $1 }')

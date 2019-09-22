@@ -38,6 +38,7 @@ for ientry in xrange(nentries):
     adc_crop_v = [ adc_v.at(p).crop( shower_v[p].at(0).meta() ) for p in range(3) ]
 
     # now compare overlap
+    isbad = False
     for p in xrange(3):
         adc_crop     = larcv.as_ndarray( adc_crop_v[p] )
         ssnet_shower = larcv.as_ndarray( shower_v[p].at(0) )
@@ -64,7 +65,9 @@ for ientry in xrange(nentries):
             frac_w_charge = float(nabovethresh)/float(nshowerpix)
             print "  (plane ",p,") fraction ssnet pixles above threshold: ",frac_w_charge
             if frac_w_charge<0.95:
-                NBAD += 1
+                isbad = True
+    if isbad:
+        NBAD += 1
                 
 print "Number of bad images: "
 print NBAD
