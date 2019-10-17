@@ -6,43 +6,18 @@ outdir=$3
 tag=$4
 arrayid=$SLURM_ARRAY_TASK_ID
 
-jobdir=`printf job%d ${arrayid}`
+jobdir=`printf workdir/%s_job%d ${tag} ${arrayid}`
 
-# parse flist 
-let line=${arrayid}+1
-ssnetfile=`sed -n ${line}p ${flist_ssnetout} | sed 's/90-days-archive//g'`
-superafile=`sed -n ${line}p ${flist_supera} | sed 's/90-days-archive//g'`
-
-echo $ssnetfile
-echo $superafile
-
-workdir=$PWD
-
-source /usr/local/bin/thisroot.sh
-cd /usr/local/share/dllee_unified
-source configure.sh
-
-cd $workdir
-
-mkdir $jobdir
-cp plot_ssnet.py $jobdir/
-cp plot_ssnet $jobdir/
-
+mkdir -p $jobdir
 cd $jobdir
 
-outfile=`printf out_plotssnet_%s_%02d.root ${tag} ${arrayid}`
-#python plot_ssnet.py $ssnetfile $superafile out_plotssnet_mcc9_extbnb_beta1_${arrayid}.root > log_job${arrayid}.txt || exit
-#./plot_ssnet $ssnetfile $superafile out_plotssnet_mcc9_extbnb_beta1_${arrayid}.root > log_job${arrayid}.txt || exit
-./plot_ssnet $ssnetfile $superafile  ${outfile} >& log_job${arrayid}.txt || exit
- 
-# finally copy output
-mv ${outfile} $outdir/
+# parse flist 
+let start=${arrayid}+1
+let end=${arrayid}+3
+sed -n ${start},${end}p ${flist_ssnetout} > input_ssnet.txt
+sed -n ${start},${end}p ${flist_supera}   > input_supera.txt
 
-# clean up
-cd ..
-rm -r $jobdir
+outfile=`printf ssnetplots_%s_%03d.root ${tag} ${arrayid}`
 
-
-
-
-
+./../.././plot_ssnet input_ssnet.txt input_supera.txt $outfile
+cp $outfile $outdir/
