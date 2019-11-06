@@ -13,14 +13,15 @@ Scripts
 
 First, pick a data set. Lists of datasets can be found in the [Tufts PUBS monitor](http://lnsnudot.mit.edu/taritree/dlleepubsummary.html).
 
-Go to `/cluster/tufts/wongjiradlab/larbys/pubs/` and setup pubs using
+Next, Go to `/cluster/tufts/wongjiradlab/larbys/pubs/` and setup pubs using
 
      source setup_dlleepubs_procdb.sh
 
 
-Use `get_mcinfo_filelist.sh` to get the `mcinfo` files for a dataset.
+Then choose the script to run depending on the file type of interest.
 
-Use `get_dlmerged_filelist.py` to get the list of good `dlmerged` files.
+* Use `get_mcinfo_filelist.sh` to get the `mcinfo` files for a dataset.
+* Use `get_dlmerged_filelist.py` to get the list of good `dlmerged` files.
 
 
 
