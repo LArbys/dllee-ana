@@ -1,5 +1,10 @@
 #!/bin/bash
 
+start=$PWD
+
+# DLLEE UNIFIED DIR
+dllee_dir=/cluster/tufts/wongjiradlab/twongj01/production/dllee_unified_opencv3.1_copy2
+
 # SETUP ROOT
 source /usr/local/root/root-6.16.00/bin/thisroot.sh
 
@@ -29,3 +34,6 @@ if [ ! -f $OPENCV_INCDIR/opencv/cv.h ]; then
 fi
 
 
+cd $dllee_dir
+source configure.sh
+cd $start

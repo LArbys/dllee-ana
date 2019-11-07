@@ -1,18 +1,34 @@
-import os,sys, array
+import os,sys, array, argparse
+
+parser = argparse.ArgumentParser( "Summary Tree Maker" )
+parser.add_argument("--jobid","-j",required=True,type=int,help="JOB ARRAY ID")
+parser.add_argument("--sample","-s",required=True,type=str,help="Sample Name")
+parser.add_argument("--output","-o",default=None,type=str,help="Output file name")
+parser.add_argument("--nfiles","-n",default=1,type=int,help="Number of files per job")
+parser.add_argument("--ismc","-mc",default=False,action='store_true',help="File is MC")
+parser.add_argument("--flist-dir","-fd",default="../../../filelists",type=str,help="location of filelists")
+
+args = parser.parse_args()
 
 import ROOT as rt
 from larlite import larlite
 from larcv import larcv
 
 dataset = "dlmergedsparsessnet_mcc9jan_extbnb"
-filelist = open("filelists/%s.list"%(dataset),'r')
 jobid=0
 ismc=False
 nfiles = 10
 
+dataset = args.sample
+jobid   = args.jobid
+ismc    = args.ismc
+nfiles  = args.nfiles
+
+flist_path = args.flist_dir+"/%s.list"%(dataset)
+
+filelist = open(flist_path,'r')
 lfilelist = filelist.readlines()
 print "Number of files in filelist: ",len(lfilelist)
-
 
  # SETUP INPUT
 start=jobid*nfiles
@@ -26,19 +42,51 @@ potchain = rt.TChain("potsummary_generator_tree")
 ioll = larlite.storage_manager( larlite.storage_manager.kREAD )
 iolcv = larcv.IOManager( larcv.IOManager.kREAD, "klarcv", larcv.IOManager.kTickForward )
 
+fbad = open("bad_dlmerged_list.txt",'w')
+
 for f in lfilelist[start:end]:
     if ".root" not in f:
         continue
-    print "ana: ",f.strip()
-    os.system("ln -s %s %s"%(f.strip(),os.path.basename(f.strip())))
-    potchain.Add( os.path.basename(f.strip()) )
-    ioll.add_in_filename( os.path.basename(f.strip()) )
-    iolcv.add_in_file( os.path.basename(f.strip()) )
+
+    print "process ",f.strip()
+    basename = os.path.basename(f.strip())
+    os.system("ln -s %s %s"%(f.strip(),basename))
+
+    # check file first
+    isgood = True
+    try:
+    #if True:
+        fff = rt.TFile( basename, 'read' )
+        wire_tree = fff.Get("image2d_wire_tree")
+        tracker_tree = fff.Get("track_trackReco_tree")
+        vertex_tree  = fff.Get("pgraph_test_tree")
+        shower_tree  = fff.Get("shower_showerreco_tree")
+
+        nimages = wire_tree.GetEntries()
+        if tracker_tree.GetEntries()!=nimages or tracker_tree.GetEntries()!=nimages or shower_tree.GetEntries()!=nimages or vertex_tree.GetEntries()!=nimages:
+            isgood = False
+            print "number of entries do not match"
+
+        fff.Close()
+    
+    except:
+        print "could not parse file: ",basename
+        isgood = False
+
+    if not isgood:
+        print "problem with file: ",basename
+        print>>fbad,basename
+        continue
+
+
+    potchain.Add( basename )
+    ioll.add_in_filename( basename )
+    iolcv.add_in_file( basename )
     
 ioll.open()
 iolcv.initialize()
 
-out = rt.TFile("output_filecheck_plots_%s_%03d.root"%(dataset,jobid),"recreate")
+out = rt.TFile("output_filecheck_plots_%s_%04d.root"%(dataset,jobid),"recreate")
 
 ttree = rt.TTree("dlsummary","MC File statistics")
 tpot  = rt.TTree("dlpot",    "MC File statistics")
@@ -50,7 +98,8 @@ run    = array.array('i',[0])
 subrun = array.array('i',[0])
 event  = array.array('i',[0])
 opflashpe = array.array('f',[0])
-numvertices = array.array('i',[0])
+nvertices = array.array('i',[0])
+
 
 # pot vars
 pot = array.array('f',[0.0])
@@ -60,6 +109,7 @@ ttree.Branch("run",run,"run/I")
 ttree.Branch("subrun",subrun,"subrun/I")
 ttree.Branch("event",event,"event/I")
 ttree.Branch("opflashpe",opflashpe,"opflashpe/F")
+ttree.Branch("nvertices",nvertices,"nvertices/I")
 
 tpot.Branch("pot",pot,"pot/F")
 
@@ -92,7 +142,11 @@ for ientry in xrange(nentries):
         if tusec>=4.0 and tusec<=6.0 and opflashpe[0]==0.0:
             opflashpe[0] = flash.TotalPE()
 
+    # nvertices
+    ev_pgraph = iolcv.get_data( larcv.kProductPGraph, "test" )
+    nvertices[0] = ev_pgraph.PGraphArray().size()
 
+    # Run, subrun, event, index
     run[0] = ioll.run_id()
     subrun[0] = ioll.subrun_id()
     event[0] = ioll.event_id()
