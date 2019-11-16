@@ -3,7 +3,10 @@ import os,sys,argparse,json
 # name a dataset/table to get files for
 #table="dlmergedsparsessnet_mcc9jan_extbnb"
 #table="dlmergedsparsessnet_mcc9jan_bnb5e19"
-table="dlmergedsparsessnet_mcc9_v13_bnb_overlay_run1"
+#table="dlmergedsparsessnet_mcc9_v13_bnb_overlay_run1"
+table="dlmergedsparsessnet_mcc9_v13_nueintrinsics_overlay_run1"
+#table="dlmergedsparsessnet_mcc9_v13_overlay_dirt_run1"
+
 flistfolder="filelists"
 
 query="SELECT run,subrun,data from %s where status=4 order by run,subrun asc"%( table )

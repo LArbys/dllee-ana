@@ -6,6 +6,7 @@ parser.add_argument("--sample","-s",required=True,type=str,help="Sample Name")
 parser.add_argument("--output","-o",default=None,type=str,help="Output file name")
 parser.add_argument("--nfiles","-n",default=1,type=int,help="Number of files per job")
 parser.add_argument("--ismc","-mc",default=False,action='store_true',help="File is MC")
+parser.add_argument("--ext","-ext",default=False,action='store_true',help="EXT trigger sample")
 parser.add_argument("--flist-dir","-fd",default="../../../filelists",type=str,help="location of filelists")
 
 args = parser.parse_args()
@@ -117,9 +118,11 @@ tpot.Branch("pot",pot,"pot/F")
 # POT
 pot[0] = 0.0
 if ismc:
-    for ientry in pot_table.GetEntries():
-        pot_table.GetEntry(ientry)
-        pot[0] = pot_table.potsummary_generator_branch.totpot
+    for ientry in range(potchain.GetEntries()):
+        potchain.GetEntry(ientry)
+        pot[0] += potchain.potsummary_generator_branch.totpot
+print "POT: ",pot[0]
+tpot.Fill()
 
 # opflash
 nentries = ioll.get_entries()
@@ -137,9 +140,12 @@ for ientry in xrange(nentries):
         flash = flash_v.at(iflash)
         tusec = flash.Time()
         thflashtime.Fill( tusec )
+        if args.ext:
+            # remove delay from EXT trigger samples (compared to BNB trigger)
+            tusec -= 24*0.015625
         #print "[%d] tusec=%.2f pe=%.2f"%(iflash,tusec,flash.TotalPE())
         #if tusec>=190*0.015625 and tusec<=210*0.015625 and opflashpe[0]==0.0:
-        if tusec>=4.0 and tusec<=6.0 and opflashpe[0]==0.0:
+        if tusec>=3.0 and tusec<=4.9 and opflashpe[0]==0.0:
             opflashpe[0] = flash.TotalPE()
 
     # nvertices
