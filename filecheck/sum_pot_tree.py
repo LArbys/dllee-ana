@@ -2,7 +2,8 @@ import os,sys
 
 import ROOT as rt
 
-rootfile = "mcc9_v13/summarytree_dlmerged_mcc9_v13_overlay_dirt_run1.root"
+#rootfile = "mcc9_v13/summarytree_dlmerged_mcc9_v13_overlay_dirt_run1.root"
+rootfile = "mcc9_v13/summarytree_dlmerged_mcc9_v13_nueintrinsics_overlay_run1.root"
 
 tree_pot = rt.TChain("dlpot")
 tree_pot.Add( rootfile )
