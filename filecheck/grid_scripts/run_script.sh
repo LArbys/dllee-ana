@@ -17,5 +17,12 @@ jobdir=`printf %s/jobdir_arrayid%03d $sample $SLURM_ARRAY_TASK_ID`
 mkdir -p $workdir/$jobdir/
 cd $jobdir
 
-python ../../../summary_tree.py -s $sample --jobid $SLURM_ARRAY_TASK_ID --nfiles 10 
+# for overlay
+python ../../../summary_tree.py -s $sample --jobid $SLURM_ARRAY_TASK_ID --nfiles 50 --ext --ismc
+
+# for ext
+#python ../../../summary_tree.py -s $sample --jobid $SLURM_ARRAY_TASK_ID --nfiles 50 --ext
+
+# for bnb
+#python ../../../summary_tree.py -s $sample --jobid $SLURM_ARRAY_TASK_ID --nfiles 50
 
