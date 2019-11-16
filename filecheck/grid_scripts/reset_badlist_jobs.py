@@ -4,7 +4,9 @@ badlist = "badlist.txt"
 fbad = open(badlist,'r')
 lbad = fbad.readlines()
 
-sample="mcc9jan_extbnb"
+sample="mcc9jan_bnb5e19"
+#sample="mcc9_v13_bnb_overlay_run1"
+#sample="mcc9_v13_nueintrinsics_overlay_run1"
 
 rselist = []
 for l in lbad:
@@ -16,11 +18,12 @@ for l in lbad:
 
 for (run,subrun) in rselist:
 
-    print (run,subrun),": modify DB"
+    print (run,subrun),": modify DB for ",sample
+    raw_input()
 
     for table in [sample+"_trackersparsessnet","showerreco_"+sample,"dlmergedsparsessnet_"+sample]:
         print table
-        query="UPDATE %s SET status=1 where run=%d and subrun=%d"%( table, run, subrun )
+        query="UPDATE %s SET status=10 where run=%d and subrun=%d"%( table, run, subrun )
         cmdx="echo \"\\x \\\\\\\\ %s\" | psql -h lnsnudot.mit.edu -U tufts-pubs procdb" %( query )
         pout = os.popen(cmdx)
         plines = pout.readlines()
