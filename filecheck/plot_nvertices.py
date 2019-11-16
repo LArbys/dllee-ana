@@ -4,21 +4,21 @@ import ROOT as rt
 import utils
 
 # Canvas
-c = rt.TCanvas("copflash","Opflash PE",1000,500)
+c = rt.TCanvas("cnvertices","Nvertices PE",1000,500)
 c.Draw()
 
-hname = "hopflashpe"
+hname = "hnverticespe"
 hists = {}
-nbins = 3000
-minbin = 0.0
-maxbin = 30e3
+nbins = 10
+minbin = 0
+maxbin = 10
 
 out = rt.TFile("temp.root","recreate")
 # define hits
 for sample in utils.samples:
     hn = hname+"_"+sample
     print hn    
-    h = rt.TH1D( hn, "", nbins, minbin, maxbin )
+    h = rt.TH1D( hn, ";num vertices per event", nbins, minbin, maxbin )
     utils.set_hist_style( h, sample )
     hists[sample] = h
     
@@ -37,7 +37,7 @@ for sample in utils.samples:
     out.cd()
     
     hn = hname+"_"+sample
-    trees[sample].Draw("opflashpe>>%s"%(hn))
+    trees[sample].Draw("nvertices>>%s"%(hn))
     prescale = hists[sample].Integral()
     utils.scale_hist( hists[sample], sample )
     print "  hist integral, ",sample,": prescale=",prescale," post-scale=",hists[sample].Integral()
@@ -45,7 +45,8 @@ for sample in utils.samples:
     
 
 # stacked prediction
-hstack = utils.make_stack( "hopflashpe_stack", hists )
+hstack = utils.make_stack( "hnvertices_stack", hists )
+hstack.SetTitle(";num vertex candidates in event")
 
 hmax_stack = hstack.GetMaximum()
 hmax_bnb   = hists["mcc9jan_bnb5e19"].GetMaximum()
@@ -63,7 +64,7 @@ hists["mcc9jan_bnb5e19"].SetLineWidth(2)
 hists["mcc9jan_bnb5e19"].Draw("E1same")
 
 c.Draw()
-c.SetLogy(1)
+#c.SetLogy(1)
 #c.SetLogx(1)
 c.Update()
 

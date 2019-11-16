@@ -36,6 +36,7 @@ hists["mcc9_v13_overlay_dirt_run1"].Scale( dirt_scale )
 c = rt.TCanvas("ctflash","Flash Times",1000,500)
 
 hists["mcc9jan_bnb5e19"].SetLineColor(rt.kBlack)
+hists["mcc9jan_bnb5e19"].SetLineWidth(2)
 hists["mcc9jan_bnb5e19"].Draw("histE1")
 hists["mcc9jan_extbnb"].SetLineColor(rt.kBlue)
 hists["mcc9_v13_bnb_overlay_run1"].SetLineColor(rt.kRed)
