@@ -1,0 +1,4 @@
+4952 73 /cluster/kappa/90-days-archive/wongjiradlab/larbys/data/db/mcc9_v13_bnb_overlay_run1/stage1/049/52/000/73//supera-Run004952-SubRun000073.root
+4953 50 /cluster/kappa/90-days-archive/wongjiradlab/larbys/data/db/mcc9_v13_nueintrinsics_overlay_run1/stage1/049/53/000/50//supera-Run004953-SubRun000050.root
+5121 4 /cluster/kappa/90-days-archive/wongjiradlab/larbys/data/db/mcc9jan_extbnb/stage1/051/21/000/04//supera-Run005121-SubRun000004.root
+5121 3 /cluster/kappa/90-days-archive/wongjiradlab/larbys/data/db/mcc9jan_bnb5e19/stage1/051/21/000/03//supera-Run005121-SubRun000003.root
