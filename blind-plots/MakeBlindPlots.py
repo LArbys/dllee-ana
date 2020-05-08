@@ -55,8 +55,8 @@ for event in INPUT_TREE:
     idxv = tuple((run,sub,evt,vid))
 
     if APPLY_BQ and not PassBeamQuality[idx]: continue
-    if idx in ChooseMe and ChooseMe[idxv] > BDTscore: continue
-    ChooseMe[idxv] = BDTscore
+    if idx in ChooseMe and ChooseMe[idx] > BDTscore: continue
+    ChooseMe[idx] = BDTscore
 
 Variables = []
 for event in INPUT_TREE:
@@ -65,9 +65,10 @@ for event in INPUT_TREE:
     sub = event.subrun
     evt = event.event
     vid = event.vtxid
+    BDTscore = event.BDTscore_1e1p
 
-    idxv = tuple((run,sub,evt,vid))
-    if idxv not in ChooseMe: continue
+    idx = tuple((run,sub,evt))
+    if ChooseMe[idx] != BDTscore: continue
     
     Variables.append([
         event.AlphaT_1e1p,
