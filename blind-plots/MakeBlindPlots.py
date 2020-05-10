@@ -38,6 +38,9 @@ APPLY_BQ   = False
 if APPLY_BQ:
     with open("BeamQualityFilter.pickle","wb") as handle: PassBeamQuality = pickle.load(handle)
 
+TARGET_POT = argv[2]
+KEEP_N     = int(6*TARGET_POT / 1.0e20) 
+        
 ChooseMe = {}
 for event in INPUT_TREE:
 
@@ -51,11 +54,9 @@ for event in INPUT_TREE:
     idx  = tuple((run,sub,evt))
     idxv = tuple((run,sub,evt,vid))
 
-    if BDTscore < 0.7: continue
-    
     if APPLY_BQ and not PassBeamQuality[idx]: continue
-    if idx in ChooseMe and ChooseMe[idxv] > BDTscore: continue
-    ChooseMe[idxv] = BDTscore
+    if idx in ChooseMe and ChooseMe[idx] > BDTscore: continue
+    ChooseMe[idx] = BDTscore
 
 Variables = []
 for event in INPUT_TREE:
@@ -64,9 +65,10 @@ for event in INPUT_TREE:
     sub = event.subrun
     evt = event.event
     vid = event.vtxid
+    BDTscore = event.BDTscore_1e1p
 
-    idxv = tuple((run,sub,evt,vid))
-    if idxv not in ChooseMe: continue
+    idx = tuple((run,sub,evt))
+    if ChooseMe[idx] != BDTscore: continue
     
     Variables.append([
         event.AlphaT_1e1p,
@@ -125,6 +127,7 @@ names = [
     'Vertex Z',
     r'Shower Charge in Image / Shower Charge in e$^-$ Cluster',
     'Length of Longest Track']
+
 shortname = ['alphaT',
              'pT',
              'pToverp',
@@ -183,10 +186,12 @@ ranges = [
     (0,2),
     (0,150)]
 
+np.random.shuffle(Variables)
+Variables = Variables[0:10]
+
 Nbins = 10
 
 output = []
-
 outroot = TFile("blindplothistograms.root","recreate")
 
 for i,j in enumerate(names):
