@@ -187,7 +187,9 @@ ranges = [
     (0,150)]
 
 np.random.shuffle(Variables)
-Variables = Variables[0:10]
+
+NSELECT = min(len(Variables),KEEP_N)
+Variables = Variables[0:NSELECT]
 
 Nbins = 10
 
