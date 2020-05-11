@@ -98,12 +98,14 @@ nue_prebdt_cut += " && Proton_Edep>60.0 "
 nue_prebdt_cut += " && Electron_Edep>35.0 "
 nue_prebdt_cut += " && keepvtx==1"
 #nue_prebdt_cut += " && BDTscore_1e1p>0.7"
+#nue_prebdt_cut += " && shower2_E_Y<60.0"
+#nue_prebdt_cut += " && PionPID_pix_v[2]<0.7"
 
-plotdef_v = [ ("Enu_1e1p","Enu_1e1p",nue_prebdt_cut+" && BDTscore_1e1p<0.7",24,0,2400),
+plotdef_v = [ ("BDTscore","TMath::Min(TMath::Max(BDTscore_1e1p,0.0),0.999)",nue_prebdt_cut,20,0,1.0),
+              ("Enu_1e1p","Enu_1e1p",nue_prebdt_cut+" && BDTscore_1e1p<0.7",24,0,2400)
               #("MaxShrFrac","TMath::Min(TMath::Max(MaxShrFrac,0.0),0.999)",
               #"PassSimpleCuts==1 && PassPMTPrecut==1 && PassShowerReco==1 && Proton_Edep>60.0 && Electron_Edep>35.0",20,0,1.0),
               #("PrecutBeamFirstTick","PrecutBeamFirstTick",nue_prebdt_cut,50,200.0,250.0),              
-              ("BDTscore","TMath::Min(TMath::Max(BDTscore_1e1p,0.0),0.999)",nue_prebdt_cut,20,0,1.0),
 ]
 
 all_hists = {}

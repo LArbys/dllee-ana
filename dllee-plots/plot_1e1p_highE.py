@@ -98,10 +98,17 @@ nue_prebdt_cut += " && MaxShrFrac>0.2 "
 nue_prebdt_cut += " && Proton_Edep>60.0 "
 nue_prebdt_cut += " && Electron_Edep>35.0 "
 nue_prebdt_cut += " && keepvtx==1"
-#nue_prebdt_cut += " && BDTscore_1e1p>0.9"
+nue_prebdt_cut += " && BDTscore_1e1p>0.7"
 nue_prebdt_cut += " && Enu_1e1p>700"
+nue_prebdt_cut += " && shower2_E_Y<60.0"
+nue_prebdt_cut += " && PionPID_pix_v[2]<0.7"
 
 plotdef_v = [ ("Enu_1e1p","Enu_1e1p",nue_prebdt_cut,24,0,2400),
+              ("SecondShowerE","shower2_E_Y",nue_prebdt_cut,100,0,2000),
+              ("pionmpid","PionPID_pix_v[2]",nue_prebdt_cut,20,0,1.0),
+              ("electronmpid","EminusPID_pix_v[2]",nue_prebdt_cut,20,0,1.0),
+              ("muonmpid","MuonPID_pix_v[2]",nue_prebdt_cut,20,0,1.0),
+              ("gammampid","GammaPID_pix_v[2]",nue_prebdt_cut,20,0,1.0),              
               #("MaxShrFrac","TMath::Min(TMath::Max(MaxShrFrac,0.0),0.999)",
               #"PassSimpleCuts==1 && PassPMTPrecut==1 && PassShowerReco==1 && Proton_Edep>60.0 && Electron_Edep>35.0",20,0,1.0),
               #("PrecutBeamFirstTick","PrecutBeamFirstTick",nue_prebdt_cut,50,200.0,250.0),              
