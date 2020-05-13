@@ -66,9 +66,12 @@ for event in INPUT_TREE:
     evt = event.event
     vid = event.vtxid
     BDTscore = event.BDTscore_1e1p
+    pi0Mass  = event._pi0mass
+    PIDmu    = event.MuonPID_int_v[2]
 
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
+    if pi0Mass > 50 or PIDmu > 0.2: continue:
     
     Variables.append([
         event.AlphaT_1e1p,
@@ -85,7 +88,6 @@ for event in INPUT_TREE:
         event.MinShrFrac,
         event.MaxShrFrac,
         event.Lepton_PhiReco,
-        event.Lepton_ThetaReco,
         event.Proton_PhiReco,
         event.Proton_ThetaReco,
         event.OpenAng,
@@ -114,7 +116,6 @@ names = [
     'Proton Shower Fraction',
     'Electron Shower Fraction',
     r'Electron $\phi$',
-    r'Electron $\theta$',
     r'Proton $\phi$',
     r'Proton $\theta$',
     'Opening Angle',
@@ -142,7 +143,6 @@ shortname = ['alphaT',
              'protonshowerfrac',
              'electronshowerfrac',
              'electronphi',
-             'electrontheta',
              'protonphi',
              'protontheta',
              'openingangle',
@@ -172,7 +172,6 @@ ranges = [
     (0,1),
     (0,1),
     (-np.pi,np.pi),
-    (0,np.pi),
     (-np.pi,np.pi),
     (0,np.pi),
     (0,np.pi),
