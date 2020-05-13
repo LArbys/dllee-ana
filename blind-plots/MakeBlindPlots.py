@@ -10,11 +10,11 @@ def PmuGivenX(mu,x):
     pi  = np.pi
     c   = [1.,-1./12,1./288,139./51840,-571./2488320,-163879./209018880]
     
-    if x == 0 or mu == 0:
-        return np.exp(-mu)
-    else:
+    try:
         poly = sum(c[i]/x**(i+0.5) for i in range(len(c)))
         return 1/np.sqrt(2*pi)*np.exp(x+x*np.log(mu/x)-mu)*poly
+    except:
+        return exp(-mu)
     
 def GetErrors(xobs,CL=0.6827):
     
