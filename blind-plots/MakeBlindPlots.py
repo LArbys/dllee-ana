@@ -71,7 +71,7 @@ for event in INPUT_TREE:
 
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
-    if pi0Mass > 50 or PIDmu > 0.2: continue:
+    if pi0Mass > 50 or PIDmu > 0.2: continue
     
     Variables.append([
         event.AlphaT_1e1p,
