@@ -14,7 +14,7 @@ def PmuGivenX(mu,x):
         poly = sum(c[i]/x**(i+0.5) for i in range(len(c)))
         return 1/np.sqrt(2*pi)*np.exp(x+x*np.log(mu/x)-mu)*poly
     except:
-        return exp(-mu)
+        return np.exp(-mu)
     
 def GetErrors(xobs,CL=0.6827):
     
