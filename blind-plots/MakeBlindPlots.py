@@ -6,7 +6,8 @@ from scipy.interpolate import interp1d
 
 def PmuGivenX(mu,x):
 
-    mu,x = float(mu),float(x)
+    mu = mu.astype(float)
+    x  = x.astype(float)
     pi  = np.pi
     c   = [1.,-1./12,1./288,139./51840,-571./2488320,-163879./209018880]
     
@@ -21,7 +22,7 @@ def GetErrors(xobs,CL=0.6827):
     step    = 0.05
 
     upperBoundary = int(max(10,xobs+5*np.sqrt(xobs)))
-    r = np.arange(0,upperBoundary,step)    
+    r = np.arange(0,upperBoundary,step)  
     s    = PmuGivenX(r,xobs)*step
     PDF1 = interp1d(r,s,bounds_error=False,fill_value=0)
     PPF1 = interp1d(np.cumsum(s),r)
