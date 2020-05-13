@@ -18,10 +18,10 @@ def PmuGivenX(mu,x):
     
 def GetErrors(xobs,CL=0.6827):
     
-    step    = 0.05
+    step    = 0.01
 
     upperBoundary = int(max(10,xobs+5*np.sqrt(xobs)))
-    r = np.arange(0,upperBoundary,step)  
+    r = np.arange(0.01,upperBoundary,step)  
     s    = PmuGivenX(r,xobs)*step
     PDF1 = interp1d(r,s,bounds_error=False,fill_value=0)
     PPF1 = interp1d(np.cumsum(s),r)
