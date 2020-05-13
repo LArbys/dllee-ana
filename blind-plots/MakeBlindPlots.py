@@ -7,7 +7,6 @@ from scipy.interpolate import interp1d
 def PmuGivenX(mu,x):
 
     mu = mu.astype(float)
-    x  = x.astype(float)
     pi  = np.pi
     c   = [1.,-1./12,1./288,139./51840,-571./2488320,-163879./209018880]
     
