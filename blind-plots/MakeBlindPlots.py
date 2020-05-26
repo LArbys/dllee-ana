@@ -6,21 +6,22 @@ from scipy.interpolate import interp1d
 
 def PmuGivenX(mu,x):
 
+    mu = mu.astype(float)
     pi  = np.pi
     c   = [1.,-1./12,1./288,139./51840,-571./2488320,-163879./209018880]
     
-    if x == 0:
-        return np.exp(-mu)
-    else:
+    try:
         poly = sum(c[i]/x**(i+0.5) for i in range(len(c)))
         return 1/np.sqrt(2*pi)*np.exp(x+x*np.log(mu/x)-mu)*poly
+    except:
+        return np.exp(-mu)
     
 def GetErrors(xobs,CL=0.6827):
     
-    step    = 0.05
+    step    = 0.01
 
     upperBoundary = int(max(10,xobs+5*np.sqrt(xobs)))
-    r = np.arange(0,upperBoundary,step)    
+    r = np.arange(0.01,upperBoundary,step)  
     s    = PmuGivenX(r,xobs)*step
     PDF1 = interp1d(r,s,bounds_error=False,fill_value=0)
     PPF1 = interp1d(np.cumsum(s),r)
@@ -38,8 +39,8 @@ APPLY_BQ   = False
 if APPLY_BQ:
     with open("BeamQualityFilter.pickle","wb") as handle: PassBeamQuality = pickle.load(handle)
 
-TARGET_POT = argv[2]
-KEEP_N     = int(6*TARGET_POT / 1.0e20) 
+TARGET_POT = float(argv[2])
+KEEP_N     = int(8*TARGET_POT / 1.0e20)
         
 ChooseMe = {}
 for event in INPUT_TREE:
@@ -66,9 +67,12 @@ for event in INPUT_TREE:
     evt = event.event
     vid = event.vtxid
     BDTscore = event.BDTscore_1e1p
+    pi0Mass  = event._pi0mass
+    PIDmu    = event.MuonPID_int_v[2]
 
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
+    if pi0Mass > 50 or PIDmu > 0.2: continue
     
     Variables.append([
         event.AlphaT_1e1p,
@@ -85,7 +89,6 @@ for event in INPUT_TREE:
         event.MinShrFrac,
         event.MaxShrFrac,
         event.Lepton_PhiReco,
-        event.Lepton_ThetaReco,
         event.Proton_PhiReco,
         event.Proton_ThetaReco,
         event.OpenAng,
@@ -114,7 +117,6 @@ names = [
     'Proton Shower Fraction',
     'Electron Shower Fraction',
     r'Electron $\phi$',
-    r'Electron $\theta$',
     r'Proton $\phi$',
     r'Proton $\theta$',
     'Opening Angle',
@@ -142,7 +144,6 @@ shortname = ['alphaT',
              'protonshowerfrac',
              'electronshowerfrac',
              'electronphi',
-             'electrontheta',
              'protonphi',
              'protontheta',
              'openingangle',
@@ -172,7 +173,6 @@ ranges = [
     (0,1),
     (0,1),
     (-np.pi,np.pi),
-    (0,np.pi),
     (-np.pi,np.pi),
     (0,np.pi),
     (0,np.pi),
