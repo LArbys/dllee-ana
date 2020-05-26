@@ -7,14 +7,17 @@ datadir="~/working/larbys/datafiles/ntuples_v28-40_forNeutrino2020"
 
 #fnames = [datadir+"/mcc9_v29e_run3b_bnb_intrinsic_nue_overlay_nocrtremerge.root",
 #          "mcc9_v29e_dl_run3_G1_bnb_dlfilter_1e1p_lowBDT_partial_fvv.root"]
-fnames = [datadir+"/mcc9_v29e_dl_run3_G1_bnb_dlana_open1e19_fvv.root",
-          "mcc9_v29e_dl_run3_G1_bnb_dlfilter_1e1p_lowBDT_partial_fvv.root"]
+#fnames = [datadir+"/mcc9_v29e_dl_run3_G1_bnb_dlana_open1e19_fvv.root",
+#          "mcc9_v29e_dl_run3_G1_bnb_dlfilter_1e1p_lowBDT_partial_fvv.root"]
+#fnames = ["run1_C1_1e1p_lowBDT_sideband.v1_1_1.fvvonly.root",
+#          datadir+"/mcc9_v28_wctagger_5e19.root"]
+fnames = [datadir+"/mcc9_v28_wctagger_extbnbFULL.root",
+          datadir+"/mcc9_v29e_dl_run3_G1_extbnb.root"]
 
 
 drawstyle=["hist",
            "histE1"]
 
-cut="PassSimpleCuts==1"
 # for full cuts
 cut = "PassSimpleCuts==1 "
 cut += " && PassPMTPrecut==1 "
@@ -22,16 +25,17 @@ cut += " && PassShowerReco==1 "
 cut += " && MaxShrFrac>0.2 "
 cut += " && Proton_Edep>60.0 "
 cut += " && Electron_Edep>35.0 "
-cut += " && BDTscore_1e1p<0.8"
+cut += " && BDTscore_1e1p<0.7"
 cut += " && keepvtx==1"
 
 varlist = [ ("TotPE","TotPE",cut,100,0,10000),
+            ("LowTotPE","TotPE",cut,100,0,500),
             ("MaxShrFrac","TMath::Max(MaxShrFrac,0)",cut,100,0,1.0),
             ("OpenAng","OpenAng",cut,50,0,3.14159*2), 
             ("QTrunk","ChargeNearTrunk",cut,100,-100,10e3),
             ("ProtonEdep","Proton_Edep",cut,50,0,200),
             ("ElectronEdep","Electron_Edep",cut,50,0,200),
-            ("BDT1e1p","BDTscore_1e1p",cut,100,0.0,1.0),
+            ("BDT1e1p","BDTscore_1e1p",cut,20,0.0,1.0),
             ("keep","keepvtx","",5,0,5),
             ("Simple","PassSimpleCuts","",5,0,5),
             ("Precut","PassPMTPrecut","",5,0,5) ]

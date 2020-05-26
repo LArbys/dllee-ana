@@ -29,10 +29,17 @@ TFile**		/home/twongjirad/working/larbys/datafiles/aux_v28-40_forNeutrino2020/we
   KEY: TTree	eventweight_tree;140	eventweight_tree
 """
 
-mcpairs = [ ("mcc9_v29e_dl_run3b_bnb_nu_overlay_nocrtremerge.root","weights_forCV_v40_bnb_nu_run3.root") ]
+#mcpairs = [ ("mcc9_v29e_dl_run3b_bnb_nu_overlay_nocrtremerge.root","weights_forCV_v40_bnb_nu_run3.root") ]
+#mcpairs = [ ("mcc9_v29e_run3b_bnb_intrinsic_nue_overlay_nocrtremerge.root","weights_forCV_v40_intrinsic_nue_run3.root") ]
+#mcpairs = [ ("mcc9_v28_wctagger_nueintrinsics.root","weights_forCV_v40_intrinsic_nue_run1.root"),
+#            ("mcc9_v28_wctagger_bnboverlay.root","weights_forCV_v40_bnb_nu_run1.root")]
+mcpairs = [ ("mcc9_v28_wctagger_bnboverlay_newbdt.root","weights_forCV_v40_bnb_nu_run1.root"),
+            ("mcc9_v28_wctagger_nueintrinsics_newbdt.root","weights_forCV_v40_intrinsic_nue_run1.root") ]
+
 RSE=['run','subrun','event']
 
 for samplefile,weightfile in mcpairs:
+    print "make weights for: ",samplefile
     #open weight rootfile in pandas, so we can get DB-like queries
     t_start = time.time()
     df_weight = read_root( aux_folder+"/"+weightfile, "eventweight_tree", columns=["run","subrun","event","xsec_corr_weight"] )
@@ -53,5 +60,3 @@ for samplefile,weightfile in mcpairs:
 
     df_joined.to_root( samplefile.replace(".root","_mcweight.root"), key="mcweight" )
     
-    
-    break
