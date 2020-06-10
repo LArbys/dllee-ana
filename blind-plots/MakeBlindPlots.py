@@ -100,7 +100,8 @@ for event in INPUT_TREE:
         event.Yreco,
         event.Zreco,
         event.shower1_smallQ_Y/event.shower1_sumQ_Y,
-        max(event.Proton_TrackLength,event.Lepton_TrackLength)])
+        max(event.Proton_TrackLength,event.Lepton_TrackLength),
+        event.Lepton_ThetaReco])
 
 names = [
     r'$\alpha_T$',
@@ -128,7 +129,8 @@ names = [
     'Vertex Y',
     'Vertex Z',
     r'Shower Charge in Image / Shower Charge in e$^-$ Cluster',
-    'Length of Longest Track']
+    'Length of Longest Track',
+    r'Electron $\theta$']
 
 shortname = ['alphaT',
              'pT',
@@ -155,7 +157,8 @@ shortname = ['alphaT',
              'vertexy',
              'vertexz',
              'showerqratio',
-             'longesttracklength']
+             'longesttracklength',
+             'electrontheta']
              
 
 ranges = [
@@ -184,7 +187,8 @@ ranges = [
     (-117,117),
     (0,1036),
     (0,2),
-    (0,150)]
+    (0,150),
+    (np.pi/10,np.pi)]
 
 np.random.shuffle(Variables)
 
