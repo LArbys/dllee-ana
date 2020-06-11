@@ -188,7 +188,7 @@ ranges = [
     (0,1036),
     (0,2),
     (0,150),
-    (0.5,np.pi)]
+    (2*np.pi/10,np.pi)]
 
 np.random.shuffle(Variables)
 
