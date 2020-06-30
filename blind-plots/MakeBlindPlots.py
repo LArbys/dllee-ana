@@ -69,10 +69,13 @@ for event in INPUT_TREE:
     BDTscore = event.BDTscore_1e1p
     pi0Mass  = event._pi0mass
     PIDmu    = event.MuonPID_int_v[2]
-
+    PIDe     = event.EminusPID_int_v[2]
+    PIDp     = event.ProtonPID_int_v[2]
+    
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
-    if pi0Mass > 50 or PIDmu > 0.2: continue
+    if pi0Mass > 50 or PIDmu > 0.2 or (PIDp < 0.8 and event.Enu_1e1p < 400): continue
+    
     
     Variables.append([
         event.AlphaT_1e1p,
@@ -101,7 +104,10 @@ for event in INPUT_TREE:
         event.Zreco,
         event.shower1_smallQ_Y/event.shower1_sumQ_Y,
         max(event.Proton_TrackLength,event.Lepton_TrackLength),
-        event.Lepton_ThetaReco])
+        event.Lepton_ThetaReco,
+        PIDmu,
+        PIDp,
+        PIDe])
 
 names = [
     r'$\alpha_T$',
@@ -130,7 +136,10 @@ names = [
     'Vertex Z',
     r'Shower Charge in Image / Shower Charge in e$^-$ Cluster',
     'Length of Longest Track',
-    r'Electron $\theta$']
+    r'Electron $\theta$',
+    'Muon MPID Score',
+    'Proton MPID Score',
+    'Electron MPID Score']
 
 shortname = ['alphaT',
              'pT',
@@ -158,7 +167,10 @@ shortname = ['alphaT',
              'vertexz',
              'showerqratio',
              'longesttracklength',
-             'electrontheta']
+             'electrontheta',
+             'mpidmuon',
+             'mpidproton',
+             'mpidelectron']
              
 
 ranges = [
@@ -169,7 +181,7 @@ ranges = [
     (30,120),
     (0,3),
     (0,1),
-    (0,3000),
+    (0,5000),
     (100,700),
     (0,1400),
     (0,800),
@@ -188,7 +200,10 @@ ranges = [
     (0,1036),
     (0,2),
     (0,150),
-    (2*np.pi/10,np.pi)]
+    (2*np.pi/10,np.pi),
+    (0.2,1),
+    (0,1),
+    (0,1)]
 
 np.random.shuffle(Variables)
 
