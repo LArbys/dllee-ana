@@ -40,7 +40,7 @@ if APPLY_BQ:
     with open("BeamQualityFilter.pickle","wb") as handle: PassBeamQuality = pickle.load(handle)
 
 TARGET_POT = float(argv[2])
-KEEP_N     = int(8*TARGET_POT / 1.0e20)
+KEEP_N     = int(6*TARGET_POT / 1.0e20)
         
 ChooseMe = {}
 for event in INPUT_TREE:
