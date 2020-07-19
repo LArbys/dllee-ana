@@ -31,6 +31,16 @@ def GetErrors(xobs,CL=0.6827):
 
     return xobs_low,xobs_high
 
+def GetShCons(evt):
+    
+    EU = evt.shower1_sumQ_U*0.0139 + 31.5
+    EV = evt.shower1_sumQ_V*0.0143 + 35.7
+    EY = evt.shower1_sumQ_Y*0.0125 + 13.8       
+    
+    return sqrt((EU-EV)**2 + (EU-EY)**2 + (EY-EV)**2)/EY
+
+
+
 INPUT_FVV  = argv[1]
 INPUT_FILE = TFile.Open(INPUT_FVV)
 INPUT_TREE = INPUT_FILE.Get("dlana/FinalVertexVariables")
@@ -71,11 +81,13 @@ for event in INPUT_TREE:
     PIDmu    = event.MuonPID_int_v[2]
     PIDe     = event.EminusPID_int_v[2]
     PIDp     = event.ProtonPID_int_v[2]
+    ShrCons  = GetShCons(event)
     
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
-    if pi0Mass > 50 or PIDmu > 0.2 or (PIDp < 0.8 and event.Enu_1e1p < 400): continue
-    
+    if pi0Mass > 50: continue
+    if event.Proton_ThetaReco > pi/2: continue
+    if ShrCons > 2: continue
     
     Variables.append([
         event.AlphaT_1e1p,
