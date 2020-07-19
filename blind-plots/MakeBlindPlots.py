@@ -37,7 +37,7 @@ def GetShCons(evt):
     EV = evt.shower1_sumQ_V*0.0143 + 35.7
     EY = evt.shower1_sumQ_Y*0.0125 + 13.8       
     
-    return sqrt((EU-EV)**2 + (EU-EY)**2 + (EY-EV)**2)/EY
+    return np.sqrt((EU-EV)**2 + (EU-EY)**2 + (EY-EV)**2)/EY
 
 
 
@@ -50,7 +50,7 @@ if APPLY_BQ:
     with open("BeamQualityFilter.pickle","wb") as handle: PassBeamQuality = pickle.load(handle)
 
 TARGET_POT = float(argv[2])
-KEEP_N     = int(19*TARGET_POT / 1.0e20)
+KEEP_N     = int(14*TARGET_POT / 1.0e20)
         
 ChooseMe = {}
 for event in INPUT_TREE:
@@ -86,7 +86,7 @@ for event in INPUT_TREE:
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
     if pi0Mass > 50: continue
-    if event.Proton_ThetaReco > pi/2: continue
+    if event.Proton_ThetaReco > np.pi/2: continue
     if ShrCons > 2: continue
     
     Variables.append([
