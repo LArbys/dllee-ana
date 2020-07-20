@@ -3,119 +3,96 @@ import ROOT as rt
 
 rt.gStyle.SetOptStat(0)
 
-ntuple_dir="~/working/larbys/datafiles/ntuples_v28-40_forNeutrino2020"
-files = { "mcbnbnuoverlay":ntuple_dir+"/mcc9_v29e_dl_run3b_bnb_nu_overlay_nocrtremerge.root",
-          "mcbnbintrinsic":ntuple_dir+"/mcc9_v29e_run3b_bnb_intrinsic_nue_overlay_nocrtremerge.root",          
-          "extbnb":ntuple_dir+"/mcc9_v29e_dl_run3_G1_extbnb.root",
-          "bnb":ntuple_dir+"/mcc9_v28_wctagger_run3_bnb1e19.root" }
-files["bnb"] = "mcc9_v29e_dl_run3_G1_bnb_dlfilter_1e1p_highE_fvv.v1_1_0.root"
-#BNBPOT=8.786e18
+import dllee_plots
+
+## ====================================
+## DATA DEFINITION
+## ---------------
+
+## RUN 1:
+#RUN = "run1"
+# open 5e19 sample
+#BNBPOT=4.403e+19
+#BNBSPILLS=9776965.0
+#BNBFILE=dllee_plots.ntuple_dir+"/mcc9_v28_wctagger_5e19_finalbdt.root"
+
+# RUN 1C LOW BDT
+#BNBPOT=1.7302180e+20 # w/ GOOD BEAM FLAG CUT
+#BNBSPILLS=38602759.0
+#BNBFILE = "mcc9_v29e_dl_run1_C1_bnb_dlfilter_lowBDT_v1_1_3_fvv.root"
+
+## RUN 2: Low BDT
+RUN = "run2"
+BNBPOT=2.642e+20-2.964e+19
+BNBSPILLS=67599788.0-7089070.0
+BNBFILE = ["mcc9_v29e_dl_run2_D2_bnb_dlfilter_highE_v1_1_3_fvv_nomakeup.root",
+           "mcc9_v29e_dl_run2_E1_bnb_dlfilter_highE_v1_1_3_fvv.root"]
+
+## RUN 3: lowBDT
+#RUN = "run3"
+#BNBFILE = dllee_plots.ntuple_dir+"/mcc9_v29e_dl_run3_G1_dlfilter_1e1p_lowBDT_v1_1_1_refilter_fvv_v2.root"
+#BNBPOT=1.701e+20
+#BNBSPILLS=43980680.0
+## RUN 3: 1e19 open sample
+#BNBFILE = dllee_plots.ntuple_dir+"/mcc9_v28_wctagger_run3_bnb1e19.root"
+#BNBPOT=8.806e+18
 #BNBSPILLS=2263559.0
-#BNBPOT=7.102e+18
-#BNBSPILLS=1822131.0
-#BNBPOT=7.102e+19
-#BNBSPILLS=1822131.0
-#BNBPOT=1.03e20
-#BNBSPILLS=26612977.0
-BNBPOT=1.701e+20
-BNBSPILLS=43980680.0
+
+dllee_trees  = dllee_plots.get_dllee_trees( RUN, BNBFILE )
+scalefactors = dllee_plots.get_scale_factors( RUN, BNBPOT, BNBSPILLS )
 
 
-# get MC samples (must have 'mc' in name)
-mcsamples = []
-datasamples = []
-for samplename,filename in files.items():
-    if "mc" in samplename:
-        mcsamples.append(samplename)
-    else:
-        datasamples.append(samplename)
+nue_bdt_cut = "PassSimpleCuts==1 "
+#nue_bdt_cut += " && PassPMTPrecut==1 "
+nue_bdt_cut += " && PassShowerReco==1 "
+nue_bdt_cut += " && MaxShrFrac>0.2 "
+nue_bdt_cut += " && Proton_Edep>60.0 "
+nue_bdt_cut += " && Electron_Edep>35.0 "
+nue_bdt_cut += " && keepvtx_1e1p==1"
+nue_bdt_cut += " && BDTscore_1e1p>0.7"
+#nue_bdt_cut += " && BDTscore_1e1p>0.05 && BDTscore_1e1p<0.7"
+#nue_bdt_cut += " && BDTscore_1e1p>0.7"
+#nue_bdt_cut += " && shower2_E_Y<60.0"
+#nue_bdt_cut += " && PionPID_pix_v[2]<0.7"
+#nue_bdt_cut += " && _pi0mass < 50 && MuonPID_int_v[2] < 0.2"
+#nue_lowBDT_cut = nue_bdt_cut + " && BDTscore_1e1p<0.7"
+nue_highe_cut = nue_bdt_cut + " && Enu_1e1p>700.0"
 
-scale = {"mcbnbnuoverlay":BNBPOT/8.98773223801e20,
-         "mcbnbintrinsic":BNBPOT/4.707047e22,
-         "extbnb":BNBSPILLS/39566274.0,
-         "bnb":1.0}
+print "BDT Cut: ",nue_bdt_cut
 
-mcmode_split = {"numu_cc_qe":"(interactionType==1001 && currentType==0 && abs(MC_parentPDG)==14)",
-                "numu_cc_mec":"(genieMode==10 && currentType==0 && abs(MC_parentPDG)==14)",
-                "nue_cc_qe":"(interactionType==1001 && currentType==0 && abs(MC_parentPDG)==12)",
-                "nue_cc_mec":"(genieMode==10 && currentType==0 && abs(MC_parentPDG)==12)",
-                "numu_cc_pi0":"currentType==0 && interactionType!=1001 && genieMode!=10 && npi0>0 && (abs(MC_parentPDG)==14)",
-                "nue_cc_pi0":"currentType==0 && interactionType!=1001 && genieMode!=10 && npi0>0 && (abs(MC_parentPDG)==12)",
-                "numu_nc_pi0":"currentType==1 && interactionType!=1001 && genieMode!=10 && npi0>0 && (abs(MC_parentPDG)==14)",
-                "nue_nc_pi0":"currentType==1 && interactionType!=1001 && genieMode!=10 && npi0>0 && (abs(MC_parentPDG)==12)",
-                "numu_cc_all":"currentType==0 && (abs(MC_parentPDG)==14)",
-                "nue_cc_all":"currentType==0 && (abs(MC_parentPDG)==12)",
-                "numu_nc_all":"currentType==1 && (abs(MC_parentPDG)==14)",
-                "nue_nc_all":"currentType==1 && (abs(MC_parentPDG)==12)"}
-            
-colors = {"extbnb":rt.kGray,
-          "ncpi0":rt.kGreen-9,
-          "ncoth":rt.kGreen+2,
-          "numu_cc_qe":rt.kRed,
-          "numu_cc_mec":rt.kRed+3,
-          "numu_cc_pi0":rt.kOrange-3,
-          "numu_cc_other":rt.kRed-10,
-          "nue_cc_qe":rt.kBlue,
-          "nue_cc_mec":rt.kBlue+3,
-          "nue_cc_pi0":rt.kCyan+2,
-          "nue_cc_other":rt.kBlue-10,
-          "bnb":rt.kBlack}
-
-print "SCALE FACTORS"
-print scale
-         
-filenames = files.keys()
-
-print "Load FVV trees"
-trees = {}
-for name,path in files.items():
-    trees[name] = rt.TChain("dlana/FinalVertexVariables")
-    trees[name].Add( files[name] )
-
-# add friend trees
-# MC weights
-print "Add MC Weight files"
-mcweighttrees = {}
-for samplename,fname in files.items():
-    if "mc" in samplename:
-        mcweighttrees[samplename] = rt.TChain("mcweight")
-        mcweighttrees[samplename].Add( "../auxdataprep/"+os.path.basename(fname).replace(".root","_mcweight.root") )
-        trees[samplename].AddFriend( mcweighttrees[samplename] )
-
-print "Load multivertex tree"
-multivtxtrees = {}
-for samplename,fname in files.items():
-    multivtxtrees[ samplename ] = rt.TChain("multivtxtree")
-    multivtxtrees[ samplename ].Add( fname.replace(".root","_multivtx.root") )
-    trees[samplename].AddFriend( multivtxtrees[ samplename ] )
-
-
-
-nue_prebdt_cut = "PassSimpleCuts==1 "
-nue_prebdt_cut += " && PassPMTPrecut==1 "
-nue_prebdt_cut += " && PassShowerReco==1 "
-nue_prebdt_cut += " && MaxShrFrac>0.2 "
-nue_prebdt_cut += " && Proton_Edep>60.0 "
-nue_prebdt_cut += " && Electron_Edep>35.0 "
-nue_prebdt_cut += " && keepvtx==1"
-nue_prebdt_cut += " && BDTscore_1e1p>0.7"
-nue_prebdt_cut += " && Enu_1e1p>700"
-#nue_prebdt_cut += " && shower2_E_Y<60.0"
-#nue_prebdt_cut += " && PionPID_pix_v[2]<0.7"
-
-plotdef_v = [ ("Enu_1e1p","Enu_1e1p",nue_prebdt_cut,False,24,0,2400),
-              ("lowTotPE","TotPE",nue_prebdt_cut,True,20,0,100),
-              ("TotPE","TotPE",nue_prebdt_cut,True,20,0,10000),
-              ("SecondShowerE","shower2_E_Y",nue_prebdt_cut,False,20,0,2000),
-              ("pionmpid","PionPID_pix_v[2]",nue_prebdt_cut,False,20,0,1.0),
-              ("electronmpid","EminusPID_pix_v[2]",nue_prebdt_cut,False,20,0,1.0),
-              ("muonmpid","MuonPID_pix_v[2]",nue_prebdt_cut,False,20,0,1.0),
-              ("gammampid","GammaPID_pix_v[2]",nue_prebdt_cut,False,20,0,1.0),              
-              #("MaxShrFrac","TMath::Min(TMath::Max(MaxShrFrac,0.0),0.999)",
-              #"PassSimpleCuts==1 && PassPMTPrecut==1 && PassShowerReco==1 && Proton_Edep>60.0 && Electron_Edep>35.0",20,0,1.0),
-              #("PrecutBeamFirstTick","PrecutBeamFirstTick",nue_prebdt_cut,50,200.0,250.0),              
-              ("BDTscore","TMath::Min(TMath::Max(BDTscore_1e1p,0.0),0.999)",nue_prebdt_cut + " && Enu_1e1p>700.0",False,20,0,1.0),
+plotdef_v = [ ("BDTscore","TMath::Min(TMath::Max(BDTscore_1e1p,0.0),0.999)",nue_highe_cut,False,20,0,1.0),
+              ("lowTotPE","TotPE",nue_highe_cut,False,25,0,1000),
+              ("TotPE","TotPE",nue_highe_cut,False,20,0,10000),              
+              ("Enu_1e1p","Enu_1e1p",nue_bdt_cut,True,24,0,2400),
+              ("MaxShrFrac","TMath::Min(TMath::Max(MaxShrFrac,0.0),0.999)",nue_highe_cut,False,50,0,1.0),
+              ("MuonPID","TMath::Min(MuonPID_int_v[2],0.999)",nue_highe_cut,True,10,0,1.0),
+              ("ProtonPID","TMath::Min(ProtonPID_int_v[2],0.999)",nue_highe_cut,True,10,0,1.0),
+              ("ElectronPID","TMath::Min(EminusPID_int_v[2],0.999)",nue_highe_cut,True,10,0,1.0), 
+              #("PrecutBeamFirstTick","PrecutBeamFirstTick",nue_bdt_cut,50,200.0,250.0),              
 ]
+
+all_hists, canvas = dllee_plots.make_plots( plotdef_v, dllee_trees, scalefactors, pause=True )
+
+raw_input()
+
+## old
+if True:
+    sys.exit(0)
+
+
+# plotdef_v = [ ("Enu_1e1p","Enu_1e1p",nue_bdt_cut,False,24,0,2400),
+#               ("lowTotPE","TotPE",nue_bdt_cut,True,20,0,100),
+#               ("TotPE","TotPE",nue_bdt_cut,True,20,0,10000),
+#               ("SecondShowerE","shower2_E_Y",nue_bdt_cut,False,20,0,2000),
+#               ("pionmpid","PionPID_pix_v[2]",nue_bdt_cut,False,20,0,1.0),
+#               ("electronmpid","EminusPID_pix_v[2]",nue_bdt_cut,False,20,0,1.0),
+#               ("muonmpid","MuonPID_pix_v[2]",nue_bdt_cut,False,20,0,1.0),
+#               ("gammampid","GammaPID_pix_v[2]",nue_bdt_cut,False,20,0,1.0),              
+#               #("MaxShrFrac","TMath::Min(TMath::Max(MaxShrFrac,0.0),0.999)",
+#               #"PassSimpleCuts==1 && PassPMTPrecut==1 && PassShowerReco==1 && Proton_Edep>60.0 && Electron_Edep>35.0",20,0,1.0),
+#               #("PrecutBeamFirstTick","PrecutBeamFirstTick",nue_bdt_cut,50,200.0,250.0),              
+#               ("BDTscore","TMath::Min(TMath::Max(BDTscore_1e1p,0.0),0.999)",nue_bdt_cut + " && Enu_1e1p>700.0",False,20,0,1.0),
+# ]
 
 all_hists = {}
 canvas = {}
