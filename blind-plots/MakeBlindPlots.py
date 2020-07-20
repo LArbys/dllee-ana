@@ -229,6 +229,8 @@ outroot = TFile("blindplothistograms.root","recreate")
 
 for i,j in enumerate(names):
 
+    if shortname[i] == 'electrontheta': continue
+    
     # THIS WOULD REQUIRE MATPLOTLIB, ACTUALLY MAKES PLOTS
     #plt.clf()
     #plt.figure(figsize=(8,5))
