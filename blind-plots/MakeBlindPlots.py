@@ -116,7 +116,6 @@ for event in INPUT_TREE:
         event.Zreco,
         event.shower1_smallQ_Y/event.shower1_sumQ_Y,
         max(event.Proton_TrackLength,event.Lepton_TrackLength),
-        event.Lepton_ThetaReco,
         PIDmu,
         PIDp,
         PIDe])
@@ -148,7 +147,6 @@ names = [
     'Vertex Z',
     r'Shower Charge in Image / Shower Charge in e$^-$ Cluster',
     'Length of Longest Track',
-    r'Electron $\theta$',
     'Muon MPID Score',
     'Proton MPID Score',
     'Electron MPID Score']
@@ -179,7 +177,6 @@ shortname = ['alphaT',
              'vertexz',
              'showerqratio',
              'longesttracklength',
-             'electrontheta',
              'mpidmuon',
              'mpidproton',
              'mpidelectron']
@@ -212,7 +209,6 @@ ranges = [
     (0,1036),
     (0,2),
     (0,150),
-    (2*np.pi/10,np.pi),
     (0,0.2),
     (0,1),
     (0,1)]
@@ -229,7 +225,6 @@ outroot = TFile("blindplothistograms.root","recreate")
 
 for i,j in enumerate(names):
 
-    if shortname[i] == 'electrontheta': continue
     
     # THIS WOULD REQUIRE MATPLOTLIB, ACTUALLY MAKES PLOTS
     #plt.clf()
