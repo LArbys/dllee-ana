@@ -37,19 +37,30 @@ run    = array.array('i',[0])
 subrun = array.array('i',[0])
 event  = array.array('i',[0])
 vtxid  = array.array('i',[0])
-evweight = array.array('f',[0.0])
-evscore  = array.array('f',[0.0])
-keepvtx  = array.array('i',[0])
+evweight_1e1p = array.array('f',[0.0])
+evscore_1e1p  = array.array('f',[0.0])
+evweight_1m1p = array.array('f',[0.0])
+evscore_1m1p  = array.array('f',[0.0])
+keepvtx_1e1p  = array.array('i',[0])
+keepvtx_1m1p  = array.array('i',[0])
 tweight.Branch("run",run,"run/I")
 tweight.Branch("subrun",subrun,"subrun/I")
 tweight.Branch("event",event,"event/I")
 tweight.Branch("vtxid",vtxid,"vtxid/I")
-tweight.Branch("evweight",evweight,"evweight/F")
-tweight.Branch("evscore", evscore, "evscore/F")
-tweight.Branch("keepvtx", keepvtx, "keepvtx/I")
+tweight.Branch("evweight_1e1p",evweight_1e1p,"evweight_1e1p/F")
+tweight.Branch("evscore_1e1p", evscore_1e1p, "evscore_1e1p/F")
+tweight.Branch("evweight_1m1p",evweight_1m1p,"evweight_1m1p/F")
+tweight.Branch("evscore_1m1p", evscore_1m1p, "evscore_1m1p/F")
+tweight.Branch("keepvtx_1e1p", keepvtx_1e1p, "keepvtx_1e1p/I")
+tweight.Branch("keepvtx_1m1p", keepvtx_1m1p, "keepvtx_1m1p/I")
 
-rse_scores = {}
-rse_maxvtxid = {}
+# need to tally max vertex for 1e1p
+rse_scores_1e1p = {}
+rse_maxvtxid_1e1p = {}
+
+# need to tally max vertex for 1m1p
+rse_scores_1m1p = {}
+rse_minvtxid_1m1p = {}
 
 print "Loop to define max RSE score"
 for ientry in xrange(nentries):
@@ -57,32 +68,46 @@ for ientry in xrange(nentries):
     if ientry%10000==0:
         print " entry ",ientry
     rse = (fvv.run,fvv.subrun,fvv.event)
-    if rse not in rse_scores:
+    if rse not in rse_scores_1e1p:
         # put in some default score
-        rse_scores[rse] = -1
-        rse_maxvtxid[rse] = -1
+        rse_scores_1e1p[rse] = -1
+        rse_maxvtxid_1e1p[rse] = -1
+    if rse not in rse_scores_1m1p:
+        rse_scores_1m1p[rse] = None
+        rse_minvtxid_1m1p[rse] = -1
 
     # valid scores are only if other cuts pass
-    if selection=="1e1p":
-        if ( fvv.PassSimpleCuts==1 and
-             fvv.PassPMTPrecut==1 and
-             fvv.MaxShrFrac>0.2 and
-             fvv.Proton_Edep>60.0 and
-             fvv.Electron_Edep>35.0 and
-             fvv.BDTscore_1e1p>rse_scores[rse] ):
-            rse_scores[rse] = fvv.BDTscore_1e1p
-            rse_maxvtxid[rse] = fvv.vtxid
-    elif selection in ["1m1p","1mu1p"]:
-        pass
+    if ( fvv.PassSimpleCuts==1 and
+         #fvv.PassPMTPrecut==1 and
+         fvv.MaxShrFrac>0.2 and
+         fvv.Proton_Edep>60.0 and
+         fvv.Electron_Edep>35.0 and
+         fvv.BDTscore_1e1p>rse_scores_1e1p[rse] ):
+        rse_scores_1e1p[rse]   = fvv.BDTscore_1e1p
+        rse_maxvtxid_1e1p[rse] = fvv.vtxid
+
+    if ( fvv.PassSimpleCuts==1 and
+         #fvv.PassPMTPrecut==1 and
+         fvv.MaxShrFrac<0.2 and
+         fvv.OpenAng>0.5 and
+         fvv.ChargeNearTrunk>0 and
+         fvv.FailedBoost_1m1p!=1 and
+         fvv.BDTscore_1mu1p_cosmic<0.7 and
+         (fvv.BDTscore_1mu1p_nu>rse_scores_1m1p[rse] or rse_scores_1m1p[rse] is None)):
+        rse_scores_1m1p[rse]   = fvv.BDTscore_1mu1p_nu
+        rse_minvtxid_1m1p[rse] = fvv.vtxid
+        
 
         
-print "number in rse_scores dict: ",len(rse_scores)
+print "number in rse_scores_1m1p dict: ",len(rse_scores_1m1p)
+print "number in rse_scores_1e1p dict: ",len(rse_scores_1e1p)
             
 
 rsev_dict = {}
 print "Loop to define weight"
-rse_filled = {}
+rsev_filled = {}
 nbad = 0
+nrepeated = 0
 for ientry in xrange(nentries):
 
     if ientry%10000==0:
@@ -95,30 +120,45 @@ for ientry in xrange(nentries):
     vtxid[0]  = fvv.vtxid
     rse  = (fvv.run,fvv.subrun,fvv.event)
     rsev = (fvv.run,fvv.subrun,fvv.event,fvv.vtxid)
-    if rse not in rse_filled and fvv.vtxid==rse_maxvtxid[rse]:
-        evweight[0] = 1.0
-        keepvtx[0]  = 1        
-        rse_filled[rse] = True
-    else:
-        keepvtx[0] = 0
-        evweight[0] = 0.0
-    evscore[0] = fvv.BDTscore_1e1p
+    evscore_1e1p[0] = fvv.BDTscore_1e1p        
+    evscore_1m1p[0] = fvv.BDTscore_1mu1p_nu
+        
+    if rsev not in rsev_filled:
+        rsev_filled[rsev] = True        
+        # 1e1p
+        if fvv.vtxid==rse_maxvtxid_1e1p[rse]:
+            evweight_1e1p[0] = 1.0
+            keepvtx_1e1p[0]  = 1
+        else:
+            keepvtx_1e1p[0] = 0
+            evweight_1e1p[0] = 0.0
 
-    if rsev not in rsev_dict:
-        rsev_dict[rsev] = True
+        # 1m1p
+        if fvv.vtxid==rse_minvtxid_1m1p[rse]:
+            evweight_1m1p[0] = 1.0
+            keepvtx_1m1p[0] = 1
+        else:
+            evweight_1m1p[0] = 0.0
+            keepvtx_1m1p[0] = 0
     else:
         print "repeated RSEV! ",rsev
-        evweight[0] = 0.0
-        keepvtx[0] = 0
+        nrepeated += 1
+        evweight_1e1p[0] = 0.0
+        keepvtx_1e1p[0] = 0
+        evweight_1m1p[0] = 0.0
+        keepvtx_1m1p[0] = 0
 
     if not goodrunlist[fvv.run]:
         nbad += 1
-        evweight[0] = 0.0
-        keepvtx[0] = 0
+        evweight_1e1p[0] = 0.0
+        keepvtx_1e1p[0] = 0
+        evweight_1m1p[0] = 0.0
+        keepvtx_1m1p[0] = 0
     
     tweight.Fill()
 
 print "number of vertices in bad runs: ",nbad
+print "number of repeated RSEV: ",nrepeated
 tweight.Write()
 fout.Close()
 
