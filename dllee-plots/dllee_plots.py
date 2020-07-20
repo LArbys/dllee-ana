@@ -10,15 +10,16 @@ common modes
 ###########
 ntuple_dir="/home/twongjirad/working/larbys/datafiles/ntuples_v28-40_forNeutrino2020"
 
-run1_files = { "mcbnbnuoverlay":[ntuple_dir+"/mcc9_v28_wctagger_bnboverlay_newbdt.root"],
-               "mcbnbintrinsic":[ntuple_dir+"/mcc9_v28_wctagger_nueintrinsics_newbdt.root"],
-               "extbnb":[ntuple_dir+"/mcc9_v28_wctagger_extbnbFULL.root",
-                         ntuple_dir+"/mcc9_v29e_dl_run3_G1_extbnb.root"],
-               "bnb":[ntuple_dir+"/mcc9_v28_wctagger_5e19.root"] }
+run1_files = { "mcbnbnuoverlay":[ntuple_dir+"/mcc9_v28_wctagger_bnboverlay_finalbdt.root"],
+               "mcbnbintrinsic":[ntuple_dir+"/mcc9_v28_wctagger_nueintrinsics_finalbdt.root"],
+               "extbnb":[ntuple_dir+"/mcc9_v28_wctagger_extbnb_finalbdt.root"],
+               #"extbnb":[ntuple_dir+"/mcc9_v28_wctagger_extbnb_newbdt.root",
+               #          ntuple_dir+"/mcc9_v29e_dl_run3_G1_extbnb.root"],
+               "bnb":[ntuple_dir+"/mcc9_v28_wctagger_5e19_finalbdt.root"] }
 run1_normfactors = {"mcbnbnuoverlay":4.71578587829e+20,
                     "mcbnbintrinsic":9.80336875336e+22,
-                    #"extbnb":22474918.0,
-                    "extbnb":22474918.0+39566274.0,
+                    "extbnb":22474918.0,
+                    #"extbnb":22474918.0+39566274.0,
                     "bnb":1.0}
 
 ###########
@@ -40,9 +41,9 @@ run2_normfactors = {"mcbnbnuoverlay":4.71578587829e+20,
 ###########
 # RUN 3
 ###########
-run3_files = { "mcbnbnuoverlay":[ntuple_dir+"/mcc9_v29e_dl_run3b_bnb_nu_overlay_nocrtremerge.root"],
-               "mcbnbintrinsic":[ntuple_dir+"/mcc9_v29e_run3b_bnb_intrinsic_nue_overlay_nocrtremerge.root"],          
-               "extbnb":[ntuple_dir+"/mcc9_v29e_dl_run3_G1_extbnb.root"],
+run3_files = { "mcbnbnuoverlay":[ntuple_dir+"/mcc9_v29e_dl_run3b_bnb_nu_overlay_nocrtremerge_finalbdt.root"],
+               "mcbnbintrinsic":[ntuple_dir+"/mcc9_v29e_dl_run3b_bnb_intrinsic_nue_overlay_nocrtremerge_finalbdt.root"],          
+               "extbnb":[ntuple_dir+"/mcc9_v29e_dl_run3_G1_extbnb_finalbdt.root"],
                "bnb":[ntuple_dir+"/mcc9_v28_wctagger_run3_bnb1e19.root"]}
 run3_normfactors = {"mcbnbnuoverlay":8.98773223801e20,
                     "mcbnbintrinsic":4.707047e22,

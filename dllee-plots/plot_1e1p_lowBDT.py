@@ -8,12 +8,14 @@ import dllee_plots
 ## RUN 1:
 RUN = "run1"
 # open 5e19 sample
-BNBPOT=4.403e+19
-BNBSPILLS=9776965.0
-BNBFILE=dllee_plots.ntuple_dir+"/mcc9_v28_wctagger_5e19_finalbdt.root"
-#BNBPOT=1.558e+20
-#BNBSPILLS=37272955.0
-#BNBFILE = "run1_C1_1e1p_lowBDT_sideband.v1_1_1.fvvonly.root"
+#BNBPOT=4.403e+19
+#BNBSPILLS=9776965.0
+#BNBFILE=dllee_plots.ntuple_dir+"/mcc9_v28_wctagger_5e19_finalbdt.root"
+
+# RUN 1CL LOW BDT
+BNBPOT=1.7302180e+20 # w/ GOOD BEAM FLAG CUT
+BNBSPILLS=38602759.0
+BNBFILE = "mcc9_v29e_dl_run1_C1_bnb_dlfilter_lowBDT_v1_1_3_fvv.root"
 
 ## RUN 2: Low BDT
 #RUN = "run2"
