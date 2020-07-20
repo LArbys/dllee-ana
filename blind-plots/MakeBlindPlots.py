@@ -31,6 +31,16 @@ def GetErrors(xobs,CL=0.6827):
 
     return xobs_low,xobs_high
 
+def GetShCons(evt):
+    
+    EU = evt.shower1_sumQ_U*0.0139 + 31.5
+    EV = evt.shower1_sumQ_V*0.0143 + 35.7
+    EY = evt.shower1_sumQ_Y*0.0125 + 13.8       
+    
+    return np.sqrt((EU-EV)**2 + (EU-EY)**2 + (EY-EV)**2)/EY
+
+
+
 INPUT_FVV  = argv[1]
 INPUT_FILE = TFile.Open(INPUT_FVV)
 INPUT_TREE = INPUT_FILE.Get("dlana/FinalVertexVariables")
@@ -40,7 +50,7 @@ if APPLY_BQ:
     with open("BeamQualityFilter.pickle","wb") as handle: PassBeamQuality = pickle.load(handle)
 
 TARGET_POT = float(argv[2])
-KEEP_N     = int(8*TARGET_POT / 1.0e20)
+KEEP_N     = int(14*TARGET_POT / 1.0e20)
         
 ChooseMe = {}
 for event in INPUT_TREE:
@@ -69,10 +79,15 @@ for event in INPUT_TREE:
     BDTscore = event.BDTscore_1e1p
     pi0Mass  = event._pi0mass
     PIDmu    = event.MuonPID_int_v[2]
-
+    PIDe     = event.EminusPID_int_v[2]
+    PIDp     = event.ProtonPID_int_v[2]
+    ShrCons  = GetShCons(event)
+    
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
-    if pi0Mass > 50 or PIDmu > 0.2: continue
+    if pi0Mass > 50: continue
+    if event.Proton_ThetaReco > np.pi/2: continue
+    if ShrCons > 2: continue
     
     Variables.append([
         event.AlphaT_1e1p,
@@ -100,7 +115,11 @@ for event in INPUT_TREE:
         event.Yreco,
         event.Zreco,
         event.shower1_smallQ_Y/event.shower1_sumQ_Y,
-        max(event.Proton_TrackLength,event.Lepton_TrackLength)])
+        max(event.Proton_TrackLength,event.Lepton_TrackLength),
+        event.Lepton_ThetaReco,
+        PIDmu,
+        PIDp,
+        PIDe])
 
 names = [
     r'$\alpha_T$',
@@ -128,7 +147,11 @@ names = [
     'Vertex Y',
     'Vertex Z',
     r'Shower Charge in Image / Shower Charge in e$^-$ Cluster',
-    'Length of Longest Track']
+    'Length of Longest Track',
+    r'Electron $\theta$',
+    'Muon MPID Score',
+    'Proton MPID Score',
+    'Electron MPID Score']
 
 shortname = ['alphaT',
              'pT',
@@ -155,7 +178,11 @@ shortname = ['alphaT',
              'vertexy',
              'vertexz',
              'showerqratio',
-             'longesttracklength']
+             'longesttracklength',
+             'electrontheta',
+             'mpidmuon',
+             'mpidproton',
+             'mpidelectron']
              
 
 ranges = [
@@ -166,7 +193,7 @@ ranges = [
     (30,120),
     (0,3),
     (0,1),
-    (0,3000),
+    (0,5000),
     (100,700),
     (0,1400),
     (0,800),
@@ -184,7 +211,11 @@ ranges = [
     (-117,117),
     (0,1036),
     (0,2),
-    (0,150)]
+    (0,150),
+    (2*np.pi/10,np.pi),
+    (0,0.2),
+    (0,1),
+    (0,1)]
 
 np.random.shuffle(Variables)
 
@@ -198,6 +229,8 @@ outroot = TFile("blindplothistograms.root","recreate")
 
 for i,j in enumerate(names):
 
+    if shortname[i] == 'electrontheta': continue
+    
     # THIS WOULD REQUIRE MATPLOTLIB, ACTUALLY MAKES PLOTS
     #plt.clf()
     #plt.figure(figsize=(8,5))
