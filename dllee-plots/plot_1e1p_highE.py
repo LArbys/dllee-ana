@@ -16,23 +16,24 @@ import dllee_plots
 #BNBSPILLS=9776965.0
 #BNBFILE=dllee_plots.ntuple_dir+"/mcc9_v28_wctagger_5e19_finalbdt.root"
 
-# RUN 1C LOW BDT
-#BNBPOT=1.7302180e+20 # w/ GOOD BEAM FLAG CUT
-#BNBSPILLS=38602759.0
-#BNBFILE = "mcc9_v29e_dl_run1_C1_bnb_dlfilter_lowBDT_v1_1_3_fvv.root"
+# RUN 1C HIGH E
+#BNBPOT=1.746e+20 # w/ GOOD BEAM FLAG CUT
+#BNBSPILLS=41898673.0
+#BNBFILE = ["mcc9_v29e_dl_run1_C1_bnb_dlfilter_highE_v1_1_3_fvv.root"]
 
 ## RUN 2: Low BDT
 RUN = "run2"
-BNBPOT=2.642e+20-2.964e+19
-BNBSPILLS=67599788.0-7089070.0
-BNBFILE = ["mcc9_v29e_dl_run2_D2_bnb_dlfilter_highE_v1_1_3_fvv_nomakeup.root",
+BNBPOT=2.642e+20
+BNBSPILLS=67599788.0
+BNBFILE = ["mcc9_v29e_dl_run2_D2_bnb_dlfilter_highE_v1_1_3_fvv.root",
            "mcc9_v29e_dl_run2_E1_bnb_dlfilter_highE_v1_1_3_fvv.root"]
 
-## RUN 3: lowBDT
+## RUN 3: HIGH E
 #RUN = "run3"
-#BNBFILE = dllee_plots.ntuple_dir+"/mcc9_v29e_dl_run3_G1_dlfilter_1e1p_lowBDT_v1_1_1_refilter_fvv_v2.root"
-#BNBPOT=1.701e+20
-#BNBSPILLS=43980680.0
+#BNBFILE=["mcc9_v29e_dl_run3_F1_bnb_dlfilter_highE_v1_1_3_fvv.root",
+#         "mcc9_v29e_dl_run3_G1_bnb_dlfilter_highE_v1_1_3_fvv.root"]
+#BNBPOT=2.430e+20
+#BNBSPILLS=62934480
 ## RUN 3: 1e19 open sample
 #BNBFILE = dllee_plots.ntuple_dir+"/mcc9_v28_wctagger_run3_bnb1e19.root"
 #BNBPOT=8.806e+18
@@ -41,29 +42,40 @@ BNBFILE = ["mcc9_v29e_dl_run2_D2_bnb_dlfilter_highE_v1_1_3_fvv_nomakeup.root",
 dllee_trees  = dllee_plots.get_dllee_trees( RUN, BNBFILE )
 scalefactors = dllee_plots.get_scale_factors( RUN, BNBPOT, BNBSPILLS )
 
+"""
+def GetShCons(evt):
+    
+    EU = evt.shower1_sumQ_U*0.0139 + 31.5
+    EV = evt.shower1_sumQ_V*0.0143 + 35.7
+    EY = evt.shower1_sumQ_Y*0.0125 + 13.8       
+    
+    return sqrt((EU-EV)**2 + (EU-EY)**2 + (EY-EV)**2)/EY
+"""
 
 nue_bdt_cut = "PassSimpleCuts==1 "
-#nue_bdt_cut += " && PassPMTPrecut==1 "
+nue_bdt_cut += " && PassPMTPrecut==1 "
 nue_bdt_cut += " && PassShowerReco==1 "
 nue_bdt_cut += " && MaxShrFrac>0.2 "
 nue_bdt_cut += " && Proton_Edep>60.0 "
 nue_bdt_cut += " && Electron_Edep>35.0 "
 nue_bdt_cut += " && keepvtx_1e1p==1"
 nue_bdt_cut += " && BDTscore_1e1p>0.7"
-#nue_bdt_cut += " && BDTscore_1e1p>0.05 && BDTscore_1e1p<0.7"
-#nue_bdt_cut += " && BDTscore_1e1p>0.7"
-#nue_bdt_cut += " && shower2_E_Y<60.0"
-#nue_bdt_cut += " && PionPID_pix_v[2]<0.7"
-#nue_bdt_cut += " && _pi0mass < 50 && MuonPID_int_v[2] < 0.2"
+# Tier 2
+nue_bdt_cut += " && _pi0mass <= 50 "
+nue_bdt_cut += " && Proton_ThetaReco<1.570795 "
+nue_bdt_cut += " && (Electron_Edep < 100 || MuonPID_int_v[2] < 0.2)"
+nue_bdt_cut += " && (GammaPID_pix_v[2]/(EminusPID_pix_v[2]+0.0001))<2.0 "
+# GetShCons(x) > 2: continue
+
 #nue_lowBDT_cut = nue_bdt_cut + " && BDTscore_1e1p<0.7"
-nue_highe_cut = nue_bdt_cut + " && Enu_1e1p>700.0"
+nue_highe_cut = nue_bdt_cut + " && Enu_1e1p>=700.0"
 
 print "BDT Cut: ",nue_bdt_cut
 
-plotdef_v = [ ("BDTscore","TMath::Min(TMath::Max(BDTscore_1e1p,0.0),0.999)",nue_highe_cut,False,20,0,1.0),
+plotdef_v = [ ("BDTscore","TMath::Min(TMath::Max(BDTscore_1e1p,0.0),0.999)",nue_highe_cut,True,20,0,1.0),
               ("lowTotPE","TotPE",nue_highe_cut,False,25,0,1000),
               ("TotPE","TotPE",nue_highe_cut,False,20,0,10000),              
-              ("Enu_1e1p","Enu_1e1p",nue_bdt_cut,True,24,0,2400),
+              ("Enu_1e1p","Enu_1e1p",nue_bdt_cut,True,6,0,350*6),
               ("MaxShrFrac","TMath::Min(TMath::Max(MaxShrFrac,0.0),0.999)",nue_highe_cut,False,50,0,1.0),
               ("MuonPID","TMath::Min(MuonPID_int_v[2],0.999)",nue_highe_cut,True,10,0,1.0),
               ("ProtonPID","TMath::Min(ProtonPID_int_v[2],0.999)",nue_highe_cut,True,10,0,1.0),
