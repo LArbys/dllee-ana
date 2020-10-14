@@ -50,7 +50,7 @@ if APPLY_BQ:
     with open("BeamQualityFilter.pickle","wb") as handle: PassBeamQuality = pickle.load(handle)
 
 TARGET_POT = float(argv[2])
-KEEP_N     = int(14*TARGET_POT / 1.0e20)
+KEEP_N     = 8#int(14*TARGET_POT / 1.0e20)
         
 ChooseMe = {}
 for event in INPUT_TREE:
@@ -76,19 +76,34 @@ for event in INPUT_TREE:
     sub = event.subrun
     evt = event.event
     vid = event.vtxid
-    BDTscore = event.BDTscore_1e1p
-    pi0Mass  = event._pi0mass
-    PIDmu    = event.MuonPID_int_v[2]
-    PIDe     = event.EminusPID_int_v[2]
-    PIDp     = event.ProtonPID_int_v[2]
-    ShrCons  = GetShCons(event)
+    
+    PassSimpleCuts  = event.PassSimpleCuts
+    PassShowerReco  = event.PassShowerReco
+    BDTscore        = event.BDTscore_1e1p
+    pi0Mass         = event._pi0mass
+    PIDmu           = event.MuonPID_int_v[2]
+    PIDe            = event.EminusPID_int_v[2]
+    PIDp            = event.ProtonPID_int_v[2]
+    PIDgPix         = event.GammaPID_pix_v[2]
+    PIDePix         = event.EminusPID_pix_v[2]
+    ShrCons         = GetShCons(event)
+    ElectronE       = event.Electron_Edep   
+    ProtonE         = event.Proton_Edep   
+    ProtonTh        = event.Proton_ThetaReco
+    MaxShrFrac      = event.MaxShrFrac
     
     idx = tuple((run,sub,evt))
     if ChooseMe[idx] != BDTscore: continue
+    if PassSimpleCuts == 0: continue
+    if PassShowerReco == 0: continue
+    if MaxShrFrac < 0.2: continue
+    if ProtonE < 60 or ElectronE < 35: continue
     if pi0Mass > 50: continue
-    if event.Proton_ThetaReco > np.pi/2: continue
+    if ProtonTh > np.pi/2: continue
     if ShrCons > 2: continue
-    
+    if ElectronE > 100 and PIDmu > 0.2: continue
+    if PIDgPix / PIDePix > 2 : continue
+                
     Variables.append([
         event.AlphaT_1e1p,
         event.PT_1e1p,
