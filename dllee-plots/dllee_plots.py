@@ -27,13 +27,12 @@ run1_normfactors = {"mcbnbnuoverlay":4.71578587829e+20,
 ###########
 ntuple_dir="/home/twongjirad/working/larbys/datafiles/ntuples_v28-40_forNeutrino2020"
 
-run2_files = { "mcbnbnuoverlay":[ntuple_dir+"/mcc9_v29e_dl_run3b_bnb_nu_overlay_nocrtremerge_finalbdt.root"],
-               "mcbnbintrinsic":[ntuple_dir+"/mcc9_v29e_dl_run3b_bnb_intrinsic_nue_overlay_nocrtremerge_finalbdt.root"],
-               #"extbnb":[ntuple_dir+"/mcc9_v28_wctagger_extbnbFULL.root"],
-               "extbnb":[ntuple_dir+"/mcc9_v29e_dl_run3_G1_extbnb.root"],
-               "bnb":[ntuple_dir+"/mcc9_v28_wctagger_5e19.root"] }
-run2_normfactors = {"mcbnbnuoverlay":8.98773223801e20,
-                    "mcbnbintrinsic":4.707047e22,
+run2_files = { "mcbnbnuoverlay":[ntuple_dir+"/mcc9_v29e_dl_run2_bnb_nu_overlay_finalbdt.root"],
+               "mcbnbintrinsic":[ntuple_dir+"/mcc9_v29e_dl_run2_bnb_intrinsics_nue_overlay_finalbdt.root"],
+               "extbnb":[ntuple_dir+"/mcc9_v29e_dl_run3_G1_extbnb_finalbdt.root"],
+               "bnb":[ntuple_dir+"/mcc9_v29e_dl_run2_bnb_dlfilter_1m1p_v1_1_2b_fvv.root"] }
+run2_normfactors = {"mcbnbnuoverlay":4.08963968669e+20,
+                    "mcbnbintrinsic":9.2085012316e+22,
                     "extbnb":39566274.0,
                     "bnb":1.0}
 
@@ -123,6 +122,7 @@ def get_dllee_trees( run, bnbfile ):
     mcweighttrees = {}
     for samplename,fname in files.items():
         if "mc" in samplename:
+            print samplename,fname
             for f in files[samplename]:
                 mcweighttrees[samplename] = rt.TChain("mcweight")
                 mcweighttrees[samplename].Add( "../auxdataprep/"+os.path.basename(f).replace(".root","_mcweight.root") )
@@ -131,6 +131,7 @@ def get_dllee_trees( run, bnbfile ):
     print "Load multivertex tree"
     multivtxtrees = {}
     for samplename,fname in files.items():
+        print samplename,fname
         multivtxtrees[ samplename ] = rt.TChain("multivtxtree")
         for f in files[samplename]:
             multivtxtrees[ samplename ].Add( f.replace(".root","_multivtx.root") )
@@ -163,7 +164,8 @@ def make_plots( plotdef_v, dllee_trees, scale, pause=True ):
     
         print "PLOT: ",plotdef[0]
     
-        canvas[plotdef[0]] = rt.TCanvas("c{}".format(plotdef[0]),plotdef[0],800,500)
+        canvas[plotdef[0]] = rt.TCanvas("c{}".format(plotdef[0]),plotdef[0],1200,600)
+        tlen = rt.TLegend(0.0,0.5,0.6,1.0)        
 
         # have to make large set of MC plots
         mchists = {}
@@ -249,18 +251,32 @@ def make_plots( plotdef_v, dllee_trees, scale, pause=True ):
         for flavor in ["numu","nue"]:
             for ccmode in ["other","pi0","mec","qe"]:
                 print "add : ",hcc_dict[(flavor,ccmode)].GetName()
-                prediction += hcc_dict[(flavor,ccmode)].Integral()            
-                hcc_dict[(flavor,ccmode)].SetFillColor( mcmode_colors["{}_cc_{}".format(flavor,ccmode)] )
-                hpred_stack.Add( hcc_dict[(flavor,ccmode)] )
-            
-        datahists["bnb"].SetLineColor( rt.kBlack )
-        datahists["bnb"].SetLineWidth( 2 )    
-    
-
+                hhh = hcc_dict[(flavor,ccmode)]
+                prediction += hhh.Integral()            
+                hhh.SetFillColor( mcmode_colors["{}_cc_{}".format(flavor,ccmode)] )
+                hpred_stack.Add( hhh )
+                tlen.AddEntry( hhh,"%s %s (%.1f)"%(flavor,ccmode,hhh.Integral()),"F" )
+        tlen.AddEntry( ncpi0,"NC #pi^{0} (%.1f)"%(ncpi0.Integral()), "F" )
+        tlen.AddEntry( ncoth,"NC other (%.1f)"%(ncoth.Integral()), "F" )
+        tlen.AddEntry( datahists["extbnb"],"EXTBNB (%.1f)"%(datahists["extbnb"].Integral()), "F" )
+        
         canvas[plotdef[0]].Draw()
         hpred_stack.Draw("hist")
+        tlen.AddEntry( hpred_stack,"Predicted: %.1f"%(prediction),"L")
+
+        datahists["bnb"].SetLineColor( rt.kBlack )
+        datahists["bnb"].SetLineWidth( 2 )
+        tlen.AddEntry( datahists["bnb"],"BNB data (%d)"%(datahists["bnb"].Integral()), "L" )
+        
         datahists["bnb"].Draw("E1same")
+        
+        tlen.Draw()
+        
         canvas[plotdef[0]].Update()
+
+        
+        
+        all_hists[plotdef[0]] = ( datahists, mchists, tlen )
 
         print "Prediction: ",prediction
         print "Data: ",datahists["bnb"].Integral()

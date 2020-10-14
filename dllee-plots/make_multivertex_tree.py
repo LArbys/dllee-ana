@@ -1,15 +1,15 @@
 import os,sys,array,pickle
 import ROOT as rt
+import numpy as np
 
 """
 make weight tree that picks out best vertex in an event
 """
 
-selection="1e1p"
-
 #finputname = "mcc9_v29e_dl_run3_G1_bnb_dlfilter_1e1p_lowBDT_partial_fvv.root"
 #finputname = "../../datafiles/ntuples_v28-40_forNeutrino2020/mcc9_v29e_dl_run3_G1_bnb_dlana_open1e19_fvv.root"
 finputname = sys.argv[1]
+ismc = False
 
 finput = rt.TFile(finputname)
 fvv = finput.Get("dlana/FinalVertexVariables")
@@ -67,7 +67,11 @@ for ientry in xrange(nentries):
     fvv.GetEntry(ientry)
     if ientry%10000==0:
         print " entry ",ientry
-    rse = (fvv.run,fvv.subrun,fvv.event)
+    if ismc:
+        enutrue_index = np.round(fvv.Enu_true*1000).astype(np.int)
+    else:
+        enutrue_index = 0
+    rse = (fvv.run,fvv.subrun,fvv.event,enutrue_index)
     if rse not in rse_scores_1e1p:
         # put in some default score
         rse_scores_1e1p[rse] = -1
@@ -92,7 +96,7 @@ for ientry in xrange(nentries):
          fvv.OpenAng>0.5 and
          fvv.ChargeNearTrunk>0 and
          fvv.FailedBoost_1m1p!=1 and
-         fvv.BDTscore_1mu1p_cosmic<0.7 and
+         fvv.BDTscore_1mu1p_nu<0.7 and
          (fvv.BDTscore_1mu1p_nu>rse_scores_1m1p[rse] or rse_scores_1m1p[rse] is None)):
         rse_scores_1m1p[rse]   = fvv.BDTscore_1mu1p_nu
         rse_minvtxid_1m1p[rse] = fvv.vtxid
@@ -118,8 +122,12 @@ for ientry in xrange(nentries):
     subrun[0] = fvv.subrun
     event[0]  = fvv.event
     vtxid[0]  = fvv.vtxid
-    rse  = (fvv.run,fvv.subrun,fvv.event)
-    rsev = (fvv.run,fvv.subrun,fvv.event,fvv.vtxid)
+    if ismc:
+        enutrue_index = np.round(fvv.Enu_true*1000).astype(np.int)
+    else:
+        enutrue_index = 0
+    rse  = (fvv.run,fvv.subrun,fvv.event,enutrue_index)
+    rsev = (fvv.run,fvv.subrun,fvv.event,enutrue_index,fvv.vtxid)
     evscore_1e1p[0] = fvv.BDTscore_1e1p        
     evscore_1m1p[0] = fvv.BDTscore_1mu1p_nu
         
